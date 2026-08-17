@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import AppPage from './pages/AppPage'
 import ImdbPage from './pages/ImdbPage'
+import ProfilePage from './pages/ProfilePage'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -33,6 +34,7 @@ export default function App() {
       <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
       <Route path="/app" element={<ProtectedRoute><AppPage /></ProtectedRoute>} />
       <Route path="/imdb" element={<ProtectedRoute><ImdbPage /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/app" replace />} />
     </Routes>
   )

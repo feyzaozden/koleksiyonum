@@ -126,6 +126,7 @@ export default function AppPage() {
         </div>
         <div className="app-header-right">
           <Link className="btn-imdb-link" to="/imdb">⭐ IMDb Listesi</Link>
+          <Link className="btn-imdb-link" to="/profile">👤 Profil</Link>
           <button className="btn-switch-user" onClick={signOut}>↩ Çıkış</button>
         </div>
       </div>
