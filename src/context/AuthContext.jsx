@@ -35,7 +35,19 @@ export function AuthProvider({ children }) {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: displayName, avatar_emoji: avatarEmoji } },
+      options: {
+        data: { display_name: displayName, avatar_emoji: avatarEmoji },
+        emailRedirectTo: `${window.location.origin}/login`,
+      },
+    })
+    if (error) throw error
+  }
+
+  async function resendConfirmation(email) {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/login` },
     })
     if (error) throw error
   }
@@ -70,6 +82,7 @@ export function AuthProvider({ children }) {
     signIn,
     signOut,
     updateProfile,
+    resendConfirmation,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
