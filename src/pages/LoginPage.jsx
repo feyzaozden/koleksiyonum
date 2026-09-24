@@ -78,6 +78,9 @@ export default function LoginPage() {
           </button>
         </form>
         <div className="auth-switch">
+          <Link to="/forgot-password">Şifremi unuttum</Link>
+        </div>
+        <div className="auth-switch">
           Hesabın yok mu? <Link to="/signup">Kayıt ol</Link>
         </div>
       </div>

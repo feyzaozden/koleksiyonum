@@ -20,16 +20,31 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
-      loadProfile(session?.user?.id).finally(() => setLoading(false))
+      setLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
-      loadProfile(session?.user?.id)
     })
 
     return () => subscription.unsubscribe()
-  }, [loadProfile])
+  }, [])
+
+  useEffect(() => {
+    loadProfile(session?.user?.id)
+  }, [session?.user?.id, loadProfile])
+
+  async function requestPasswordReset(email) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    if (error) throw error
+  }
+
+  async function resetPassword(password) {
+    const { error } = await supabase.auth.updateUser({ password })
+    if (error) throw error
+  }
 
   async function signUp({ email, password, displayName, avatarEmoji }) {
     const { error } = await supabase.auth.signUp({
@@ -83,6 +98,8 @@ export function AuthProvider({ children }) {
     signOut,
     updateProfile,
     resendConfirmation,
+    requestPasswordReset,
+    resetPassword,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

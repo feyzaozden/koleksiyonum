@@ -5,6 +5,8 @@ import SignupPage from './pages/SignupPage'
 import AppPage from './pages/AppPage'
 import ImdbPage from './pages/ImdbPage'
 import ProfilePage from './pages/ProfilePage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -30,6 +32,8 @@ function PublicOnlyRoute({ children }) {
 export default function App() {
   return (
     <Routes>
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
       <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
       <Route path="/app" element={<ProtectedRoute><AppPage /></ProtectedRoute>} />
