@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import Brand from '../components/Brand'
 
 function isUnconfirmedError(err) {
   return err?.code === 'email_not_confirmed' || /email.*not.*confirm/i.test(err?.message || '')
@@ -46,7 +47,7 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
-      <div className="auth-title">📚 Koleksiyonum</div>
+      <h1 className="auth-brand"><Brand large /></h1>
       <p className="auth-sub">Kitap, film ve dizi koleksiyonuna giriş yap</p>
       <div className="auth-card">
         {error && <div className="auth-error">{error}</div>}

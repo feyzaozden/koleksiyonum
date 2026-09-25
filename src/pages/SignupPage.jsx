@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import Brand from '../components/Brand'
 import { AVATAR_CHOICES } from '../constants/tabs'
 
 export default function SignupPage() {
@@ -32,7 +33,7 @@ export default function SignupPage() {
 
   return (
     <div className="auth-page">
-      <div className="auth-title">📚 Koleksiyonum</div>
+      <h1 className="auth-brand"><Brand large /></h1>
       <p className="auth-sub">Yeni bir hesap oluştur</p>
       <div className="auth-card">
         {error && <div className="auth-error">{error}</div>}

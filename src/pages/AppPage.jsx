@@ -12,6 +12,7 @@ import StatsBar from '../components/StatsBar'
 import ItemsGrid from '../components/ItemsGrid'
 import EditModal from '../components/EditModal'
 import ErrorToast from '../components/ErrorToast'
+import DeleteConfirm from '../components/DeleteConfirm'
 
 function applyTabTheme(tab) {
   const cv = TABS[tab].colorVar
@@ -32,6 +33,7 @@ export default function AppPage() {
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState('newest')
   const [editingItem, setEditingItem] = useState(null)
+  const [deletingItem, setDeletingItem] = useState(null)
 
   useEffect(() => {
     applyTabTheme(activeTab)
@@ -71,11 +73,7 @@ export default function AppPage() {
   }
 
   async function handleDelete(id) {
-    try {
-      await deleteItem(id)
-    } catch (e) {
-      showError('Silinemedi: ' + e.message)
-    }
+    await deleteItem(id)
   }
 
   async function handleSaveEdit(id, patch) {
@@ -130,11 +128,12 @@ export default function AppPage() {
           labels={tab.statusLabels}
           onStatusChange={handleStatusChange}
           onEdit={setEditingItem}
-          onDelete={handleDelete}
+          onDelete={(id) => setDeletingItem(items.find((item) => item.id === id))}
         />
       </div>
 
       <EditModal item={editingItem} onClose={() => setEditingItem(null)} onSave={handleSaveEdit} />
+      {deletingItem && <DeleteConfirm item={deletingItem} onCancel={() => setDeletingItem(null)} onConfirm={handleDelete} />}
       <ErrorToast message={error} />
     </div>
   )

@@ -29,6 +29,7 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
         {isOwner ? (
           <select
             className="status-select"
+            aria-label={`${item.title} durumu`}
             value={item.status}
             onChange={(e) => onStatusChange(item.id, e.target.value)}
           >
@@ -42,10 +43,10 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
         <a href={imdbUrl} target="_blank" rel="noreferrer" className="btn-link imdb" title="IMDb">IMDb</a>
         <a href={ytUrl} target="_blank" rel="noreferrer" className="btn-link yt" title="Fragman">&#9654;</a>
         {isOwner && (
-          <button className="btn-edit" onClick={() => onEdit(item)} title="Düzenle">✏️</button>
+          <button className="btn-edit" onClick={() => onEdit(item)} title="Düzenle" aria-label={`${item.title} öğesini düzenle`}>✏️</button>
         )}
         {isOwner && (
-          <button className="btn-delete" onClick={() => onDelete(item.id)} title="Sil">×</button>
+          <button className="btn-delete" onClick={() => onDelete(item.id)} title="Sil" aria-label={`${item.title} öğesini sil`}>×</button>
         )}
       </div>
     </div>
