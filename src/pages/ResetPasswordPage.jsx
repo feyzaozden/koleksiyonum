@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import PasswordRequirements from '../components/PasswordRequirements'
+import { PASSWORD_MIN_LENGTH } from '../utils/authValidation'
 
 // Capture callback errors before the auth client can remove the URL fragment.
 const callbackParams = new URLSearchParams(window.location.hash.slice(1))
@@ -55,12 +57,13 @@ export default function ResetPasswordPage() {
             {error && <div className="auth-error" role="alert">{error}</div>}
             <form className="auth-form" onSubmit={handleSubmit}>
               <div className="auth-field">
-                <label htmlFor="new-password">Yeni şifre (en az 6 karakter)</label>
-                <input id="new-password" type="password" required minLength={6} autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} disabled={submitting} />
+                <label htmlFor="new-password">Yeni şifre</label>
+                <input id="new-password" type="password" required minLength={PASSWORD_MIN_LENGTH} autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} disabled={submitting} aria-describedby="reset-password-rules" />
+                <PasswordRequirements password={password} id="reset-password-rules" />
               </div>
               <div className="auth-field">
                 <label htmlFor="confirm-password">Yeni şifre tekrar</label>
-                <input id="confirm-password" type="password" required minLength={6} autoComplete="new-password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} disabled={submitting} />
+                <input id="confirm-password" type="password" required minLength={PASSWORD_MIN_LENGTH} autoComplete="new-password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} disabled={submitting} />
               </div>
               <button className="auth-btn" type="submit" disabled={submitting}>{submitting ? 'Kaydediliyor...' : 'Şifremi güncelle'}</button>
             </form>

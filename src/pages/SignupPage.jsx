@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Brand from '../components/Brand'
+import PasswordRequirements from '../components/PasswordRequirements'
+import { PASSWORD_MIN_LENGTH } from '../utils/authValidation'
 import { AVATAR_CHOICES } from '../constants/tabs'
 
 export default function SignupPage() {
@@ -37,7 +39,7 @@ export default function SignupPage() {
       <h1 className="auth-brand"><Brand large /></h1>
       <p className="auth-sub">Yeni bir hesap oluştur</p>
       <div className="auth-card">
-        {error && <div className="auth-error">{error}</div>}
+        {error && <div className="auth-error" role="alert">{error}</div>}
         {info && <div className="auth-error" style={{ background: '#e6f9ee', borderColor: '#8fdcae', color: '#166534' }}>{info}</div>}
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="auth-field">
@@ -46,11 +48,13 @@ export default function SignupPage() {
           </div>
           <div className="auth-field">
             <label htmlFor="email">E-posta</label>
-            <input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input id="email" type="email" required maxLength={254} autoComplete="email" autoCapitalize="none" spellCheck={false} value={email} onChange={(e) => setEmail(e.target.value)} onBlur={() => setEmail(email.trim())} aria-describedby="email-hint" />
+            <small id="email-hint">Erişebildiğin bir adres kullan; kayıt onay bağlantısı buraya gönderilir.</small>
           </div>
           <div className="auth-field">
             <label htmlFor="password">Şifre</label>
-            <input id="password" type="password" required minLength={6} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <input id="password" type="password" required minLength={PASSWORD_MIN_LENGTH} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} aria-describedby="signup-password-rules" />
+            <PasswordRequirements password={password} id="signup-password-rules" />
           </div>
           <div className="auth-field">
             <label>Avatar</label>
