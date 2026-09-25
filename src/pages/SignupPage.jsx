@@ -54,8 +54,8 @@ export default function SignupPage() {
           </div>
           <div className="auth-field">
             <label>Avatar</label>
-            <div className="avatar-picker">
-              {AVATAR_CHOICES.slice(0, showAllAvatars ? AVATAR_CHOICES.length : 18).map((emoji) => (
+            <div className={'avatar-picker' + (showAllAvatars ? ' expanded' : '')}>
+              {AVATAR_CHOICES.map((emoji) => (
                 <button
                   type="button"
                   key={emoji}

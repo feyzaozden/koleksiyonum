@@ -31,7 +31,8 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 .auth-field label { font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; }
 .auth-field input { background:var(--bg); border:1.5px solid var(--border); border-radius:var(--radius-xs); color:var(--text); font-family:'Inter',sans-serif; font-size:0.9rem; padding:10px 13px; outline:none; transition:border-color .2s, box-shadow .2s; }
 .auth-field input:focus { border-color:var(--kitap); box-shadow:0 0 0 3px var(--kitap-glow); }
-.avatar-picker { display:flex; gap:8px; flex-wrap:wrap; }
+.avatar-picker { display:flex; max-height:88px; gap:8px; flex-wrap:wrap; overflow:hidden; }
+.avatar-picker.expanded { max-height:none; }
 .avatar-choice { width:40px; height:40px; border-radius:50%; border:2px solid var(--border); background:var(--surface2); font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; }
 .avatar-choice.selected { border-color:var(--kitap); background:var(--kitap-pale); transform:scale(1.08); }
 .avatar-toggle { align-self:flex-start; border:0; padding:2px 0 0; background:transparent; color:var(--kitap); font:inherit; font-size:.78rem; font-weight:700; cursor:pointer; }
