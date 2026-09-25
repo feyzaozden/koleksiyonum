@@ -5,7 +5,8 @@ import AppHeader from '../components/AppHeader'
 import { AVATAR_CHOICES } from '../constants/tabs'
 
 export default function ProfilePage() {
-  const { user, profile, updateProfile } = useAuth()
+  const { user, profile, updateProfile, signOut } = useAuth()
+  const [signingOut, setSigningOut] = useState(false)
   const [bio, setBio] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [avatarEmoji, setAvatarEmoji] = useState(AVATAR_CHOICES[0])
@@ -39,10 +40,18 @@ export default function ProfilePage() {
 
   if (!profile) return null
 
+  async function handleSignOut() {
+    setSigningOut(true)
+    setError(null)
+    try { await signOut() }
+    catch (err) { setError(err.message || 'Çıkış yapılamadı. Tekrar dene.') }
+    finally { setSigningOut(false) }
+  }
+
   return (
     <><AppHeader /><div className="auth-page profile-edit">
       <div className="auth-title">👤 Profilim</div>
-      <p className="auth-sub">Görünen adını, avatarını ve biyografini düzenle</p>
+      <p className="auth-sub">Kullanıcı adını, avatarını ve biyografini düzenle</p>
       <div className="auth-card">
         {error && <div className="auth-error">{error}</div>}
         {saved && (
@@ -56,7 +65,7 @@ export default function ProfilePage() {
             <input type="email" value={user.email} disabled />
           </div>
           <div className="auth-field">
-            <label htmlFor="displayName">Görünen İsim</label>
+            <label htmlFor="displayName">Kullanıcı adı</label>
             <input
               id="displayName"
               type="text"
@@ -92,6 +101,9 @@ export default function ProfilePage() {
         </form>
         <div className="auth-switch">
           <Link to="/app">← Koleksiyona dön</Link>
+        </div>
+        <div className="profile-signout">
+          <button className="btn-switch-user" type="button" disabled={signingOut || saving} onClick={handleSignOut}>{signingOut ? 'Çıkış yapılıyor…' : 'Çıkış yap'}</button>
         </div>
       </div>
     </div></>

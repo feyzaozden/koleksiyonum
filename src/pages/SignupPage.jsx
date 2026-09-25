@@ -40,8 +40,8 @@ export default function SignupPage() {
         {info && <div className="auth-error" style={{ background: '#e6f9ee', borderColor: '#8fdcae', color: '#166534' }}>{info}</div>}
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="auth-field">
-            <label htmlFor="displayName">Görünen İsim</label>
-            <input id="displayName" type="text" required maxLength={20} value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Ad Soyad" />
+            <label htmlFor="displayName">Kullanıcı adı</label>
+            <input id="displayName" type="text" required maxLength={20} value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Kullanıcı adın" />
           </div>
           <div className="auth-field">
             <label htmlFor="email">E-posta</label>
