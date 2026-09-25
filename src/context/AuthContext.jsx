@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { validateEmail, validateNewPassword } from '../utils/authValidation'
+import { changePasswordWithVerification } from '../utils/changePassword'
 
 const AuthContext = createContext(null)
 
@@ -47,6 +48,10 @@ export function AuthProvider({ children }) {
     if (validationError) throw new Error(validationError)
     const { error } = await supabase.auth.updateUser({ password })
     if (error) throw error
+  }
+
+  async function changePassword(currentPassword, password) {
+    await changePasswordWithVerification(supabase.auth, session?.user, currentPassword, password)
   }
 
   async function signUp({ email, password, displayName, avatarEmoji }) {
@@ -106,6 +111,7 @@ export function AuthProvider({ children }) {
     resendConfirmation,
     requestPasswordReset,
     resetPassword,
+    changePassword,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

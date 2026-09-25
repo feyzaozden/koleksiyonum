@@ -19,6 +19,12 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 .password-requirements ul { list-style:none; display:grid; gap:3px; }
 .password-requirements .is-met { color:var(--kitap); font-weight:600; }
 .password-requirements p { margin-top:8px; }
+.profile-password { border-top:1px solid var(--border); padding-top:16px; }
+.password-toggle { display:flex; justify-content:space-between; align-items:center; width:100%; min-height:44px; padding:8px 0; border:0; background:transparent; color:var(--text); font:inherit; font-size:.9rem; font-weight:600; cursor:pointer; }
+.profile-password .auth-form { margin-top:12px; }
+.profile-password .auth-form[hidden] { display:none; }
+.password-success { color:var(--kitap); font-size:.85rem; line-height:1.6; margin-top:10px; }
+.password-toggle:disabled { opacity:.5; cursor:wait; }
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 
 .centered-screen { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:32px 20px; }

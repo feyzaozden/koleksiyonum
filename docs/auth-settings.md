@@ -17,6 +17,10 @@ Authentication içindeki Email sağlayıcısının şifre güvenliği ayarların
 - Minimum password length: **8**.
 - Required characters: **Lowercase, uppercase letters and digits** (a–z, A–Z, 0–9).
 - E-posta doğrulamasını açık tutun; kullanılabilir bir SMTP göndericisi gerekir.
+- Profilde şifre değişikliği önce mevcut şifreyle hesabı doğrular, ardından yeni
+  şifreyi `current_password` ile birlikte gönderir. API üzerinden de eski şifreyi
+  zorunlu tutmak için Email ayarlarında **Require current password when changing
+  password** seçeneğini açın. E-posta kurtarma bağlantısı akışını ayrıca test edin.
 
 Bu ayarlar kodla otomatik uygulanmaz. Tarayıcı doğrulaması atlanabildiği için
 sunucu ayarları gereklidir. SQL migration gerekmez; mevcut koleksiyonlar değişmez.

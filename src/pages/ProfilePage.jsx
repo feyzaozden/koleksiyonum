@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import AppHeader from '../components/AppHeader'
+import ChangePasswordForm from '../components/ChangePasswordForm'
 import { AVATAR_CHOICES } from '../constants/tabs'
 
 export default function ProfilePage() {
   const { user, profile, updateProfile, signOut } = useAuth()
   const [signingOut, setSigningOut] = useState(false)
+  const [changingPassword, setChangingPassword] = useState(false)
   const [bio, setBio] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [avatarEmoji, setAvatarEmoji] = useState(AVATAR_CHOICES[0])
@@ -99,15 +101,16 @@ export default function ProfilePage() {
             <textarea id="bio" maxLength={160} rows={3} value={bio} onChange={(e) => { setBio(e.target.value); setSaved(false) }} />
             <small>Keşfet’te herkes görebilir. {bio.length}/160</small>
           </div>
-          <button className="auth-btn" type="submit" disabled={saving}>
+          <button className="auth-btn" type="submit" disabled={saving || changingPassword || signingOut}>
             {saving ? 'Kaydediliyor...' : 'Kaydet'}
           </button>
         </form>
+        <ChangePasswordForm disabled={saving || signingOut} onBusyChange={setChangingPassword} />
         <div className="auth-switch">
           <Link to="/app">← Koleksiyona dön</Link>
         </div>
         <div className="profile-signout">
-          <button className="btn-switch-user" type="button" disabled={signingOut || saving} onClick={handleSignOut}>{signingOut ? 'Çıkış yapılıyor…' : 'Çıkış yap'}</button>
+          <button className="btn-switch-user" type="button" disabled={signingOut || saving || changingPassword} onClick={handleSignOut}>{signingOut ? 'Çıkış yapılıyor…' : 'Çıkış yap'}</button>
         </div>
       </div>
     </div></>
