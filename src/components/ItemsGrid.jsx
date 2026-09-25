@@ -19,7 +19,7 @@ export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, on
           <div className="empty">
             <div className="empty-icon">{msg.icon}</div>
             <h3>{msg.h}</h3>
-            <p>{msg.p}</p>
+            <p>{section?.isOwner ? msg.p : 'Bu görünümde gösterilecek öğe yok.'}</p>
           </div>
         </div>
       )

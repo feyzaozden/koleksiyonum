@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import AppHeader from '../components/AppHeader'
 import { AVATAR_CHOICES } from '../constants/tabs'
 
 export default function ProfilePage() {
   const { user, profile, updateProfile } = useAuth()
+  const [bio, setBio] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [avatarEmoji, setAvatarEmoji] = useState(AVATAR_CHOICES[0])
   const [error, setError] = useState(null)
@@ -14,6 +16,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (profile) {
       setDisplayName(profile.display_name || '')
+      setBio(profile.bio || '')
       setAvatarEmoji(profile.avatar_emoji || AVATAR_CHOICES[0])
     }
   }, [profile])
@@ -25,7 +28,7 @@ export default function ProfilePage() {
     setSaved(false)
     setSaving(true)
     try {
-      await updateProfile({ display_name: displayName.trim(), avatar_emoji: avatarEmoji })
+      await updateProfile({ display_name: displayName.trim(), avatar_emoji: avatarEmoji, bio: bio.trim() })
       setSaved(true)
     } catch (err) {
       setError(err.message)
@@ -37,9 +40,9 @@ export default function ProfilePage() {
   if (!profile) return null
 
   return (
-    <div className="auth-page">
+    <><AppHeader /><div className="auth-page profile-edit">
       <div className="auth-title">👤 Profilim</div>
-      <p className="auth-sub">Görünen adını ve avatarını değiştir</p>
+      <p className="auth-sub">Görünen adını, avatarını ve biyografini düzenle</p>
       <div className="auth-card">
         {error && <div className="auth-error">{error}</div>}
         {saved && (
@@ -78,6 +81,11 @@ export default function ProfilePage() {
               ))}
             </div>
           </div>
+          <div className="auth-field">
+            <label htmlFor="bio">Kısa biyografi</label>
+            <textarea id="bio" maxLength={160} rows={3} value={bio} onChange={(e) => { setBio(e.target.value); setSaved(false) }} />
+            <small>Keşfet’te herkes görebilir. {bio.length}/160</small>
+          </div>
           <button className="auth-btn" type="submit" disabled={saving}>
             {saving ? 'Kaydediliyor...' : 'Kaydet'}
           </button>
@@ -86,6 +94,6 @@ export default function ProfilePage() {
           <Link to="/app">← Koleksiyona dön</Link>
         </div>
       </div>
-    </div>
+    </div></>
   )
 }

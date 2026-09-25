@@ -1,5 +1,8 @@
 -- Koleksiyonum — Supabase şeması (açık kayıt / çoklu kullanıcı modeli)
 -- Bu dosyayı Supabase Dashboard > SQL Editor içinde çalıştırın.
+-- Yeni kurulumda hemen ardından migrations/20260925_friendships.sql dosyasını
+-- çalıştırın. Arkadaşlık özellikleri ve özel koleksiyon erişimi bu migration ile açılır.
+-- Mevcut canlı projede yalnızca migration dosyasını çalıştırın.
 --
 -- NOT: Eski (auth'suz) sürümde items.user_id sabit bir integer'dı (0 veya 1).
 -- Bu sürümde her kullanıcı gerçek bir Supabase Auth hesabına sahip olduğundan

@@ -5,6 +5,8 @@ import SignupPage from './pages/SignupPage'
 import AppPage from './pages/AppPage'
 import ImdbPage from './pages/ImdbPage'
 import ProfilePage from './pages/ProfilePage'
+import DiscoverPage from './pages/DiscoverPage'
+import PersonPage from './pages/PersonPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 
@@ -37,6 +39,8 @@ export default function App() {
       <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
       <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
       <Route path="/app" element={<ProtectedRoute><AppPage /></ProtectedRoute>} />
+      <Route path="/discover" element={<ProtectedRoute><DiscoverPage /></ProtectedRoute>} />
+      <Route path="/people/:id" element={<ProtectedRoute><PersonPage /></ProtectedRoute>} />
       <Route path="/imdb" element={<ProtectedRoute><ImdbPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/app" replace />} />

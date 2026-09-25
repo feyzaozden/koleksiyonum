@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import AppHeader from '../components/AppHeader'
+import { useAuth } from '../context/AuthContext'
+import { useFriends } from '../context/FriendsContext'
 import { useItems } from '../hooks/useItems'
 import { useProfiles } from '../hooks/useProfiles'
 
@@ -12,8 +14,10 @@ const CAT_FILTERS = [
 ]
 
 export default function ImdbPage() {
-  const { items } = useItems()
-  const { byId } = useProfiles()
+  const { user } = useAuth()
+  const friends = useFriends()
+  const { items, loading, error, refresh } = useItems()
+  const { byId } = useProfiles({ ids: [user.id, ...friends.friendIds] })
   const [cat, setCat] = useState('tumu')
   const [userFilter, setUserFilter] = useState('tumu')
 
@@ -55,11 +59,15 @@ export default function ImdbPage() {
 
   return (
     <div>
+      <AppHeader />
       <div className="imdb-header">
         <div className="imdb-logo">IMDb <span>Koleksiyon Listesi</span></div>
-        <Link className="btn-imdb-back" to="/app">← Geri</Link>
       </div>
       <div className="imdb-main">
+        <p className="social-hint">Senin ve arkadaşlarının puanlarıyla oluşan ortak listeniz.</p>
+        {friends.error && <div className="auth-error" role="alert">Arkadaşlık bilgileri yüklenemedi. <button onClick={friends.refresh}>Tekrar dene</button></div>}
+        {error && <div className="auth-error" role="alert">Liste yüklenemedi. <button onClick={refresh}>Tekrar dene</button></div>}
+        {(loading || friends.loading) && <p role="status">Liste yükleniyor…</p>}
         <div className="imdb-filters">
           {CAT_FILTERS.map((f) => (
             <button
@@ -71,7 +79,7 @@ export default function ImdbPage() {
             </button>
           ))}
           <select className="imdb-user-select" value={userFilter} onChange={(e) => setUserFilter(e.target.value)}>
-            <option value="tumu">Herkes</option>
+            <option value="tumu">Ben ve arkadaşlarım</option>
             {ratedUserIds.map((uid) => (
               <option key={uid} value={uid}>{byId[uid] ? byId[uid].display_name : 'Bilinmeyen'}</option>
             ))}

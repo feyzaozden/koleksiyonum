@@ -3,13 +3,14 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import App from './App'
+import { FriendsProvider } from './context/FriendsContext'
 import './index.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <FriendsProvider><App /></FriendsProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
