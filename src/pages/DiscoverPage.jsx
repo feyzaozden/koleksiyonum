@@ -5,6 +5,7 @@ import { useFriends } from '../context/FriendsContext'
 import { useProfiles } from '../hooks/useProfiles'
 import AppHeader from '../components/AppHeader'
 import FriendActions from '../components/FriendActions'
+import { usernameSearch } from '../utils/username'
 
 export default function DiscoverPage() {
   const { user } = useAuth()
@@ -20,7 +21,7 @@ export default function DiscoverPage() {
   const ids = tab === 'friends' ? friends.friendIds : tab === 'requests'
     ? friends.rows.filter((row) => row.status === 'pending').map((row) => row.requester_id === user.id ? row.recipient_id : row.requester_id) : null
   const people = useProfiles({ search, ids, page })
-  const profiles = people.profiles.filter((p) => p.id !== user.id && (tab === 'search' || p.display_name.toLocaleLowerCase('tr').includes(input.trim().toLocaleLowerCase('tr'))))
+  const profiles = people.profiles.filter((p) => p.id !== user.id && (tab === 'search' || p.username?.includes(usernameSearch(input))))
   function selectTab(value) { setTab(value); setPage(0); setInput(''); setSearch('') }
   return <>
     <AppHeader />
@@ -33,9 +34,9 @@ export default function DiscoverPage() {
         <button className={tab === 'requests' ? 'selected' : ''} onClick={() => selectTab('requests')}>İstekler {friends.incoming.length > 0 && `(${friends.incoming.length} gelen)`}</button>
       </div>
       <label className="social-search">Kullanıcı adına göre ara
-        <input type="search" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Arkadaşının kullanıcı adını yaz…" maxLength={80} />
+        <input type="search" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Arkadaşının kullanıcı adını yaz…" maxLength={80} autoCapitalize="none" spellCheck={false} />
       </label>
-      <p className="social-hint">Kullanıcı adı, avatar ve biyografi keşfetmek için görünür. Koleksiyonlarınız yalnızca arkadaşlık kabul edildiğinde birbirinize açılır.</p>
+      <p className="social-hint">Ad Soyad, kullanıcı adı, avatar ve biyografi keşfetmek için görünür. Koleksiyonlarınız yalnızca arkadaşlık kabul edildiğinde birbirinize açılır.</p>
       {friends.error && <div className="auth-error" role="alert">Arkadaşlık bilgileri yüklenemedi. <button onClick={friends.refresh}>Tekrar dene</button></div>}
       {people.error ? <div className="auth-error" role="alert">Kişiler yüklenemedi. <button onClick={people.refresh}>Tekrar dene</button></div>
         : people.loading || friends.loading ? <p role="status">Kişiler yükleniyor…</p>
@@ -43,6 +44,7 @@ export default function DiscoverPage() {
         : <div className="people-grid">{profiles.map((person) => <article className="person-card" key={person.id}>
           <span className="profile-avatar" aria-hidden="true">{person.avatar_emoji}</span>
           <h2><Link to={`/people/${person.id}`}>{person.display_name}</Link></h2>
+          <span className="profile-username">@{person.username}</span>
           <p>{person.bio || 'Yeni hikâyelerin peşinde.'}</p>
           {friends.relationship(person.id)?.status === 'pending' && <small>{friends.relationship(person.id).recipient_id === user.id ? 'Sana arkadaşlık isteği gönderdi' : 'Gönderdiğin istek'}</small>}
           {friends.friendIds.includes(person.id) && <Link className="collection-link" to={`/people/${person.id}`}>Koleksiyonunu görüntüle →</Link>}

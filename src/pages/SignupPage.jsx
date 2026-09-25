@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Brand from '../components/Brand'
+import UsernameField from '../components/UsernameField'
 import PasswordRequirements from '../components/PasswordRequirements'
 import { PASSWORD_MIN_LENGTH } from '../utils/authValidation'
 import { AVATAR_CHOICES } from '../constants/tabs'
@@ -10,6 +11,7 @@ export default function SignupPage() {
   const { signUp } = useAuth()
   const navigate = useNavigate()
   const [displayName, setDisplayName] = useState('')
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [avatarEmoji, setAvatarEmoji] = useState(AVATAR_CHOICES[0])
@@ -24,7 +26,7 @@ export default function SignupPage() {
     setInfo(null)
     setSubmitting(true)
     try {
-      await signUp({ email, password, displayName, avatarEmoji })
+      await signUp({ email, password, displayName, username, avatarEmoji })
       setInfo('Kayıt başarılı! E-postana gelen onay bağlantısına tıkladıktan sonra giriş yapabilirsin.')
       setTimeout(() => navigate('/login'), 2500)
     } catch (err) {
@@ -43,9 +45,10 @@ export default function SignupPage() {
         {info && <div className="auth-error" style={{ background: '#e6f9ee', borderColor: '#8fdcae', color: '#166534' }}>{info}</div>}
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="auth-field">
-            <label htmlFor="displayName">Kullanıcı adı</label>
-            <input id="displayName" type="text" required maxLength={20} value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Kullanıcı adın" />
+            <label htmlFor="displayName">Ad Soyad</label>
+            <input id="displayName" type="text" required maxLength={80} autoComplete="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Adın ve soyadın" />
           </div>
+          <UsernameField value={username} onChange={setUsername} disabled={submitting} />
           <div className="auth-field">
             <label htmlFor="email">E-posta</label>
             <input id="email" type="email" required maxLength={254} autoComplete="email" autoCapitalize="none" spellCheck={false} value={email} onChange={(e) => setEmail(e.target.value)} onBlur={() => setEmail(email.trim())} aria-describedby="email-hint" />

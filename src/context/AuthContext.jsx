@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback } from 'rea
 import { supabase } from '../lib/supabaseClient'
 import { validateEmail, validateNewPassword } from '../utils/authValidation'
 import { changePasswordWithVerification } from '../utils/changePassword'
+import { normalizeUsername, validateUsername } from '../utils/username'
 
 const AuthContext = createContext(null)
 
@@ -54,18 +55,30 @@ export function AuthProvider({ children }) {
     await changePasswordWithVerification(supabase.auth, session?.user, currentPassword, password)
   }
 
-  async function signUp({ email, password, displayName, avatarEmoji }) {
+  async function signUp({ email, password, displayName, username: requestedUsername, avatarEmoji }) {
     const validationError = validateEmail(email) || validateNewPassword(password)
     if (validationError) throw new Error(validationError)
+    const username = normalizeUsername(requestedUsername || '')
+    const usernameError = validateUsername(username)
+    if (usernameError) throw new Error(usernameError)
+    if (!displayName.trim() || displayName.trim().length > 80) throw new Error('Ad Soyad 1–80 karakter olmalı.')
+    const { data: available, error: availabilityError } = await supabase.rpc('is_username_available', { candidate: username })
+    if (availabilityError) throw new Error('Kullanıcı adı kontrol edilemedi. Lütfen tekrar dene.')
+    if (!available) throw new Error('Bu kullanıcı adı alınmış. Başka bir kullanıcı adı seç.')
     const { error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
-        data: { display_name: displayName, avatar_emoji: avatarEmoji },
+        data: { display_name: displayName.trim(), username, avatar_emoji: avatarEmoji },
         emailRedirectTo: `${window.location.origin}/login`,
       },
     })
-    if (error) throw error
+    if (error) {
+      // Another signup may have claimed the name after our availability check.
+      const { data: stillAvailable } = await supabase.rpc('is_username_available', { candidate: username })
+      if (stillAvailable === false) throw new Error('Bu kullanıcı adı alınmış. Başka bir kullanıcı adı seç.')
+      throw error
+    }
   }
 
   async function resendConfirmation(email) {
@@ -89,12 +102,22 @@ export function AuthProvider({ children }) {
 
   async function updateProfile(patch) {
     if (!session?.user) return
+    if (typeof patch.display_name === 'string') {
+      patch = { ...patch, display_name: patch.display_name.trim() }
+      if (!patch.display_name || patch.display_name.length > 80) throw new Error('Ad Soyad 1–80 karakter olmalı.')
+    }
+    if (typeof patch.username === 'string') {
+      patch = { ...patch, username: normalizeUsername(patch.username) }
+      const usernameError = validateUsername(patch.username)
+      if (usernameError) throw new Error(usernameError)
+    }
     const { data, error } = await supabase
       .from('profiles')
       .update(patch)
       .eq('id', session.user.id)
       .select()
       .single()
+    if (error?.code === '23505') throw new Error('Bu kullanıcı adı alınmış. Başka bir kullanıcı adı seç.')
     if (error) throw error
     setProfile(data)
   }

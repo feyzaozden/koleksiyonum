@@ -1,5 +1,30 @@
 ## Arkadaşlık ve koleksiyon paylaşımı
 
+### Kullanıcı adı ve Ad Soyad geçişi
+
+Yeni modelde `display_name` Ad Soyad bilgisidir; tekrar edebilir. Ayrı `username`
+alanı benzersizdir. Kullanıcı adı 3–30 karakter, ilk karakter a–z; devamında a–z,
+0–9, `_` ve `.` kabul eder. A–Z harfleri otomatik küçük harfe çevrilir. Boşluklar
+silinerek düzeltilmez, reddedilir. Türkçe harfler Ad Soyad alanında kullanılabilir.
+
+Yayınlamadan önce mevcut Supabase projesinin SQL Editor bölümünde
+**`supabase/migrations/20260927_profile_usernames.sql`** dosyasını çalıştırın.
+Önceki `20260926_unique_usernames.sql` dosyası bu model için kullanılmamalı;
+çalıştırılmışsa yeni migration eski Ad Soyad benzersizlik kuralını kaldırır.
+Arkadaşlık migration'ı uygulanmış olmalıdır.
+
+Bu geçiş mevcut isimleri korur, kullanıcı adı olmayan profillere `kullanici_1`
+gibi benzersiz adlar verir. Tekrar çalıştırılması atanmış adları değiştirmez.
+Koleksiyonlar ve arkadaşlıklar ID ile bağlı olduğu için yeniden eşleştirme gerekmez.
+Yeni kullanıcılar kayıt formunda Ad Soyad ve kullanıcı adını ayrı girer;
+mevcut kullanıcılar Profilim bölümünden ikisini de değiştirebilir. Keşfet araması
+kullanıcı adına göre çalışır; kartlarda Ad Soyad ve @kullanıcıadı birlikte gösterilir.
+Dashboard üzerinden kullanıcı adı verilmeden oluşturulan hesaplar da otomatik
+benzersiz bir kullanıcı adı alır. E-posta adresinden kullanıcı adı türetilmez.
+
+Migration'dan sonra yeni frontend yayınlanmalıdır. Migration olmadan yeni
+formlar ve kullanıcı adı araması çalışmaz.
+
 - `/app`: yalnızca kendi koleksiyonun ve düzenleme işlemleri.
 - `/discover`: isimle kullanıcı arama, arkadaşlar, gelen ve gönderilen istekler.
 - `/people/:id`: temel profil; koleksiyon ve puanlar yalnızca arkadaşlara açık.

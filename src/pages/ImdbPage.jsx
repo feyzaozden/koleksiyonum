@@ -81,7 +81,7 @@ export default function ImdbPage() {
           <select className="imdb-user-select" value={userFilter} onChange={(e) => setUserFilter(e.target.value)}>
             <option value="tumu">Ben ve arkadaşlarım</option>
             {ratedUserIds.map((uid) => (
-              <option key={uid} value={uid}>{byId[uid] ? byId[uid].display_name : 'Bilinmeyen'}</option>
+              <option key={uid} value={uid}>{byId[uid] ? `${byId[uid].display_name} (@${byId[uid].username})` : 'Bilinmeyen'}</option>
             ))}
           </select>
         </div>
@@ -126,7 +126,7 @@ export default function ImdbPage() {
                       )}
                       {userFilter === 'tumu' && ratingUids.length > 0 && (
                         <span className="imdb-votes">
-                          ({ratingUids.map((uid) => `${byId[uid] ? byId[uid].display_name.split(' ')[0] : '?'}: ${item.ratings[uid]}`).join(' · ')})
+                          ({ratingUids.map((uid) => `${byId[uid]?.username ? '@' + byId[uid].username : '?'}: ${item.ratings[uid]}`).join(' · ')})
                         </span>
                       )}
                     </div>
@@ -134,7 +134,7 @@ export default function ImdbPage() {
                       <div className="imdb-notes">
                         {noteUids.map((uid) => (
                           <div className="imdb-note-item" key={uid}>
-                            <span className="imdb-note-who">{byId[uid]?.avatar_emoji} {byId[uid]?.display_name}:</span> {item.notes[uid]}
+                            <span className="imdb-note-who">{byId[uid]?.avatar_emoji} @{byId[uid]?.username}:</span> {item.notes[uid]}
                           </div>
                         ))}
                       </div>

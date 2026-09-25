@@ -91,7 +91,7 @@ export default function AppPage() {
       <AppHeader />
       <section className="profile-hero main">
         <span className="profile-avatar">{profile?.avatar_emoji || '📚'}</span>
-        <div><h1>{profile?.display_name || 'Koleksiyonum'}</h1><p>{profile?.bio || 'Kitaplarım, filmlerim ve dizilerim.'}</p>
+        <div><h1>{profile?.display_name || 'Koleksiyonum'}</h1>{profile?.username && <span className="profile-username">@{profile.username}</span>}<p>{profile?.bio || 'Kitaplarım, filmlerim ve dizilerim.'}</p>
         <Link to="/profile">Profilimi düzenle</Link></div>
       </section>
       <div className="tabs">

@@ -2,6 +2,7 @@
 -- Bu dosyayı Supabase Dashboard > SQL Editor içinde çalıştırın.
 -- Yeni kurulumda hemen ardından migrations/20260925_friendships.sql dosyasını
 -- çalıştırın. Arkadaşlık özellikleri ve özel koleksiyon erişimi bu migration ile açılır.
+-- Ardından migrations/20260927_profile_usernames.sql dosyasını çalıştırın.
 -- Mevcut canlı projede yalnızca migration dosyasını çalıştırın.
 --
 -- NOT: Eski (auth'suz) sürümde items.user_id sabit bir integer'dı (0 veya 1).
