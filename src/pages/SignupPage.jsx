@@ -11,6 +11,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [avatarEmoji, setAvatarEmoji] = useState(AVATAR_CHOICES[0])
+  const [showAllAvatars, setShowAllAvatars] = useState(false)
   const [error, setError] = useState(null)
   const [info, setInfo] = useState(null)
   const [submitting, setSubmitting] = useState(false)
@@ -54,7 +55,7 @@ export default function SignupPage() {
           <div className="auth-field">
             <label>Avatar</label>
             <div className="avatar-picker">
-              {AVATAR_CHOICES.map((emoji) => (
+              {AVATAR_CHOICES.slice(0, showAllAvatars ? AVATAR_CHOICES.length : 18).map((emoji) => (
                 <button
                   type="button"
                   key={emoji}
@@ -65,6 +66,9 @@ export default function SignupPage() {
                 </button>
               ))}
             </div>
+            <button className="avatar-toggle" type="button" onClick={() => setShowAllAvatars((current) => !current)}>
+              {showAllAvatars ? 'Daha az gör' : 'Daha fazla gör'}
+            </button>
           </div>
           <button className="auth-btn" type="submit" disabled={submitting}>
             {submitting ? 'Kayıt olunuyor...' : 'Kayıt Ol'}

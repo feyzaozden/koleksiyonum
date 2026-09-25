@@ -10,6 +10,7 @@ export default function ProfilePage() {
   const [bio, setBio] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [avatarEmoji, setAvatarEmoji] = useState(AVATAR_CHOICES[0])
+  const [showAllAvatars, setShowAllAvatars] = useState(false)
   const [error, setError] = useState(null)
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -78,7 +79,7 @@ export default function ProfilePage() {
           <div className="auth-field">
             <label>Avatar</label>
             <div className="avatar-picker">
-              {AVATAR_CHOICES.map((emoji) => (
+              {AVATAR_CHOICES.slice(0, showAllAvatars || AVATAR_CHOICES.indexOf(avatarEmoji) >= 18 ? AVATAR_CHOICES.length : 18).map((emoji) => (
                 <button
                   type="button"
                   key={emoji}
@@ -89,6 +90,9 @@ export default function ProfilePage() {
                 </button>
               ))}
             </div>
+            <button className="avatar-toggle" type="button" onClick={() => setShowAllAvatars((current) => !current)}>
+              {showAllAvatars ? 'Daha az gör' : 'Daha fazla gör'}
+            </button>
           </div>
           <div className="auth-field">
             <label htmlFor="bio">Kısa biyografi</label>

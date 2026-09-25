@@ -34,6 +34,8 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 .avatar-picker { display:flex; gap:8px; flex-wrap:wrap; }
 .avatar-choice { width:40px; height:40px; border-radius:50%; border:2px solid var(--border); background:var(--surface2); font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; }
 .avatar-choice.selected { border-color:var(--kitap); background:var(--kitap-pale); transform:scale(1.08); }
+.avatar-toggle { align-self:flex-start; border:0; padding:2px 0 0; background:transparent; color:var(--kitap); font:inherit; font-size:.78rem; font-weight:700; cursor:pointer; }
+.avatar-toggle:hover { text-decoration:underline; }
 .auth-btn { background:var(--kitap); color:#fff; border:none; border-radius:999px; font-family:'Inter',sans-serif; font-size:0.92rem; font-weight:700; padding:11px 22px; cursor:pointer; transition:opacity .18s, box-shadow .18s; }
 .auth-btn:hover { opacity:0.88; box-shadow:0 0 16px var(--kitap-glow); }
 .auth-btn:disabled { opacity:0.45; cursor:not-allowed; }
