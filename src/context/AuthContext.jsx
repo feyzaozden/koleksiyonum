@@ -101,7 +101,7 @@ export function AuthProvider({ children }) {
   }
 
   async function updateProfile(patch) {
-    if (!session?.user) return
+    if (!session?.user) throw new Error('Lütfen tekrar giriş yap.')
     if (typeof patch.display_name === 'string') {
       patch = { ...patch, display_name: patch.display_name.trim() }
       if (!patch.display_name || patch.display_name.length > 80) throw new Error('Ad Soyad 1–80 karakter olmalı.')

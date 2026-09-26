@@ -1,3 +1,4 @@
+import ProfileAvatar from '../components/ProfileAvatar'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -90,7 +91,7 @@ export default function AppPage() {
     <div>
       <AppHeader />
       <section className="profile-hero main">
-        <span className="profile-avatar">{profile?.avatar_emoji || '📚'}</span>
+        <ProfileAvatar profile={profile} />
         <div><h1>{profile?.display_name || 'Koleksiyonum'}</h1>{profile?.username && <span className="profile-username">@{profile.username}</span>}<p>{profile?.bio || 'Kitaplarım, filmlerim ve dizilerim.'}</p>
         <Link to="/profile">Profilimi düzenle</Link></div>
       </section>

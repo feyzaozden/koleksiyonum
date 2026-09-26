@@ -1,3 +1,4 @@
+import ProfileAvatar from '../components/ProfileAvatar'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -42,7 +43,7 @@ export default function DiscoverPage() {
         : people.loading || friends.loading ? <p role="status">Kişiler yükleniyor…</p>
         : profiles.length === 0 ? <div className="social-empty"><h2>{tab === 'requests' ? 'Bekleyen istek yok' : tab === 'friends' ? 'Henüz gösterilecek arkadaş yok' : 'Kullanıcı bulunamadı'}</h2><p>{tab === 'search' ? 'Başka bir kullanıcı adıyla aramayı dene.' : 'Kullanıcı ara sekmesinden arkadaşlarını bulabilirsin.'}</p></div>
         : <div className="people-grid">{profiles.map((person) => <article className="person-card" key={person.id}>
-          <span className="profile-avatar" aria-hidden="true">{person.avatar_emoji}</span>
+          <ProfileAvatar profile={person} />
           <h2><Link to={`/people/${person.id}`}>{person.display_name}</Link></h2>
           <span className="profile-username">@{person.username}</span>
           <p>{person.bio || 'Yeni hikâyelerin peşinde.'}</p>

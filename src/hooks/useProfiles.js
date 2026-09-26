@@ -9,7 +9,7 @@ export function useProfiles({ search = '', ids = null, page = 0 } = {}) {
   const refresh = useCallback(async () => {
     const request = ++version.current
     setState({ profiles: [], loading: true, error: null, hasMore: false })
-    let query = supabase.from('profiles').select('id, display_name, username, avatar_emoji, bio').order('username').order('id')
+    let query = supabase.from('profiles').select('id, display_name, username, avatar_emoji, avatar_path, bio').order('username').order('id')
     if (idsKey !== null) {
       const selected = JSON.parse(idsKey)
       if (!selected.length) { setState({ profiles: [], loading: false, error: null, hasMore: false }); return }

@@ -1,3 +1,4 @@
+import ProfileAvatar from '../components/ProfileAvatar'
 import { useMemo, useState } from 'react'
 import AppHeader from '../components/AppHeader'
 import { useAuth } from '../context/AuthContext'
@@ -134,7 +135,7 @@ export default function ImdbPage() {
                       <div className="imdb-notes">
                         {noteUids.map((uid) => (
                           <div className="imdb-note-item" key={uid}>
-                            <span className="imdb-note-who">{byId[uid]?.avatar_emoji} @{byId[uid]?.username}:</span> {item.notes[uid]}
+                            <span className="imdb-note-who"><ProfileAvatar profile={byId[uid]} compact /> @{byId[uid]?.username}:</span> {item.notes[uid]}
                           </div>
                         ))}
                       </div>
