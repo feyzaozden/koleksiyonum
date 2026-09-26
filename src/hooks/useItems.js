@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import { useFriends } from '../context/FriendsContext'
+import { validateItemDates, itemYearError } from '../utils/itemDates'
 
 export function useItems(scope = 'circle', ownerId = null) {
   const { user } = useAuth()
@@ -34,6 +35,9 @@ export function useItems(scope = 'circle', ownerId = null) {
   }, [refresh])
 
   async function addItem(payload) {
+    const yearError = itemYearError(payload.year)
+    if (yearError) throw new Error(yearError)
+    validateItemDates(payload)
     const { data, error } = await supabase.from('items').insert(payload).select().single()
     if (error) throw error
     setItems((prev) => [data, ...prev])
@@ -41,6 +45,11 @@ export function useItems(scope = 'circle', ownerId = null) {
   }
 
   async function updateItem(id, patch) {
+    const yearError = itemYearError(patch.year)
+    if (yearError) throw new Error(yearError)
+    if ('start_date' in patch || 'end_date' in patch) {
+      validateItemDates({ ...items.find((item) => item.id === id), ...patch })
+    }
     const { data, error } = await supabase.from('items').update(patch).eq('id', id).select().single()
     if (error) throw error
     setItems((prev) => prev.map((i) => (i.id === id ? data : i)))
