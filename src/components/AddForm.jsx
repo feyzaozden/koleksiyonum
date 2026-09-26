@@ -51,11 +51,15 @@ export default function AddForm({ creatorLabel, disabled, onSubmit }) {
         </select>
         <input type="text" name="note" placeholder="Not (isteğe bağlı)" autoComplete="off" value={form.note} onChange={(e) => set('note', e.target.value)} />
       </div>
-      <div className="form-row">
-        <span className="form-date-label">📅 Başlangıç:</span>
-        <input type="date" name="start_date" value={form.start_date} onChange={(e) => set('start_date', e.target.value)} />
-        <span className="form-date-label">🏁 Bitiş:</span>
-        <input type="date" name="end_date" value={form.end_date} onChange={(e) => set('end_date', e.target.value)} />
+      <div className="form-row form-dates">
+        <label className="form-date-group">
+          <span className="form-date-label">📅 Başlangıç:</span>
+          <input type="date" name="start_date" value={form.start_date} onChange={(e) => set('start_date', e.target.value)} />
+        </label>
+        <label className="form-date-group">
+          <span className="form-date-label">🏁 Bitiş:</span>
+          <input type="date" name="end_date" value={form.end_date} onChange={(e) => set('end_date', e.target.value)} />
+        </label>
       </div>
       <div className="star-row">
         <span className="star-row-label">⭐ Puan (10 üzerinden):</span>
