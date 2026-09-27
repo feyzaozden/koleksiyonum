@@ -19,6 +19,7 @@ test('friend requests and collection access are enforced by PostgreSQL', async (
     const migration = await readFile(new URL('../supabase/migrations/20260925_friendships.sql', import.meta.url), 'utf8')
     await db.exec(migration)
     await db.exec(migration) // Reapplying must preserve data and policies.
+    await db.exec(await readFile(new URL('../supabase/migrations/20260929_item_progress.sql', import.meta.url), 'utf8'))
     await db.exec(`
       grant select, insert, update, delete on public.items, public.profiles to authenticated;
       grant select on public.items to anon;
@@ -77,6 +78,7 @@ test('friend requests and collection access are enforced by PostgreSQL', async (
     await db.query('select public.remove_friendship($1)', [thirdRequest])
     await as(1)
     assert.equal((await db.query('update public.items set rating = 10 where user_id = $1 returning id', [id(2)])).rows.length, 0, 'friend cannot edit collection')
+    assert.equal((await db.query(`update public.items set progress = '{"position":10}' where user_id = $1 returning id`, [id(2)])).rows.length, 0, 'friend cannot edit progress')
     assert.equal((await db.query('delete from public.items where user_id = $1 returning id', [id(2)])).rows.length, 0, 'friend cannot delete collection')
     await assert.rejects(db.query('update public.items set user_id = $1 where user_id = $2', [id(2), id(1)]), /row-level security/)
     await db.query('select public.remove_friendship($1)', [requestId])

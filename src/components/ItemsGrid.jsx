@@ -7,7 +7,7 @@ const EMPTY_MESSAGES = {
   bitti: () => ({ icon: '✅', h: 'Tamamlanan yok', p: 'Henüz tamamladığın bir şey yok.' }),
 }
 
-export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, onStatusChange, onEdit, onDelete }) {
+export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, onStatusChange, onEdit, onDelete, onProgress }) {
   const showSectionHeaders = sections.length > 1
 
   if (!showSectionHeaders) {
@@ -37,6 +37,7 @@ export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, on
             onStatusChange={onStatusChange}
             onEdit={onEdit}
             onDelete={onDelete}
+            onProgress={onProgress}
           />
         ))}
       </div>
@@ -68,6 +69,7 @@ export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, on
                 onStatusChange={onStatusChange}
                 onEdit={onEdit}
                 onDelete={onDelete}
+            onProgress={onProgress}
               />
             ))
           )}

@@ -423,3 +423,13 @@ body { background:radial-gradient(ellipse at 0 0, #dedfd8 0, transparent 55%), r
   .form-dates { flex-direction:column; align-items:stretch; gap:12px; }
   .form-date-group { display:grid; grid-template-columns:96px minmax(0, 1fr); min-width:0; }
 }
+.item-progress { margin:10px 0; font-size:.8rem; color:var(--text-muted); }
+.item-progress progress { display:block; width:min(100%, 260px); height:7px; margin:8px 0; accent-color:var(--active); }
+.progress-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.progress-actions button { font:inherit; padding:6px 10px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); cursor:pointer; }
+.progress-actions button:disabled { opacity:.5; cursor:wait; }
+.progress-dialog { max-height:90dvh; overflow:auto; }
+.progress-dialog fieldset { border:0; padding:0; min-width:0; }
+.progress-fields { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; }
+.progress-field { display:flex; flex-direction:column; gap:6px; margin:14px 0; font-size:.8rem; }
+.progress-field > input { width:100%; min-width:0; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); font:inherit; }

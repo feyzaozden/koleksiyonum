@@ -1,7 +1,8 @@
+import ItemProgress from './ItemProgress'
 import StarsDisplay from './StarsDisplay'
 import { fmtDate } from '../utils/format'
 
-export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, onStatusChange, onEdit, onDelete }) {
+export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, onStatusChange, onEdit, onDelete, onProgress }) {
   const meta = [item.creator, item.year].filter(Boolean).join(' · ')
   const sd = fmtDate(item.start_date)
   const ed = fmtDate(item.end_date)
@@ -21,6 +22,7 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
             {ed && <span>🏁 {ed}</span>}
           </div>
         )}
+        <ItemProgress item={item} isOwner={isOwner} onSave={onProgress} />
         <StarsDisplay rating={item.rating} />
         {item.note && <div className="item-note">&quot;{item.note}&quot;</div>}
         {showOwner && <div className="item-owner-tag">{ownerName}</div>}

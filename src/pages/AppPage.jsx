@@ -128,6 +128,7 @@ export default function AppPage() {
           activeFilter={statusFilter}
           labels={tab.statusLabels}
           onStatusChange={handleStatusChange}
+          onProgress={updateItem}
           onEdit={setEditingItem}
           onDelete={(id) => setDeletingItem(items.find((item) => item.id === id))}
         />
