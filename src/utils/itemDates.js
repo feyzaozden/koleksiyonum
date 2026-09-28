@@ -30,7 +30,7 @@ export function dateInputError(value, { min, max } = {}) {
   }
   if (day.length === 2 && month.length === 2 && year.length === 4) {
     const iso = parseDate(value)
-    if (max && iso > max) return 'Başlangıç tarihi bugünden sonra olamaz.'
+    if (max && iso > max) return 'Tarih bugünden sonra olamaz.'
     if (min && iso < min) return 'Bitiş tarihi başlangıç tarihinden önce olamaz.'
   }
   return ''
@@ -51,6 +51,7 @@ export function validateItemDates({ start_date, end_date }, today = localToday()
     if (value && (!/^\d{4}-\d{2}-\d{2}$/.test(value) || parseDate(displayDate(value)) !== value)) throw new Error('Geçerli bir tarih gir.')
   }
   if (start_date && start_date > today) throw new Error('Başlangıç tarihi bugünden sonra olamaz.')
+  if (end_date && end_date > today) throw new Error('Bitiş tarihi bugünden sonra olamaz.')
   if (start_date && end_date && end_date < start_date) throw new Error('Bitiş tarihi başlangıç tarihinden önce olamaz.')
 }
 

@@ -42,6 +42,13 @@ test('invalid day, month, year and incomplete dates are rejected including leap 
 test('start cannot be future; end cannot precede start; same-day and optional dates work', () => {
   const today = '2026-09-27'
   assert.throws(() => validateItemDates({ start_date: '2026-09-28' }, today), /bugünden/)
+  assert.throws(() => validateItemDates({ end_date: '2026-09-28' }, today), /Bitiş tarihi bugünden/)
+  assert.throws(() => validateItemDates({ start_date: '2026-09-01', end_date: '2026-09-28' }, today), /Bitiş tarihi bugünden/)
+  assert.equal(dateInputError('28/09/2026', { min: '2026-09-01', max: today }), 'Tarih bugünden sonra olamaz.')
+  assert.equal(dateInputError('27/09/2026', { min: today, max: today }), '')
+  validateItemDates({ end_date: today }, today)
+  assert.equal(dateInputError('15/09/2026', { min: '2026-09-01', max: today }), '')
+  validateItemDates({ start_date: '2026-09-01', end_date: '2026-09-15' }, today)
   assert.throws(() => validateItemDates({ start_date: today, end_date: '2026-09-26' }, today), /önce/)
   validateItemDates({ start_date: today, end_date: today }, today)
   validateItemDates({ start_date: '2020-01-01' }, today)

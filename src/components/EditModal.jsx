@@ -84,7 +84,7 @@ export default function EditModal({ item, onClose, onSave }) {
           </div>
           <div className="modal-date-group">
             <label>🏁 Bitiş Tarihi</label>
-            <DateField label="Bitiş tarihi" value={form.end_date} onChange={(value) => set('end_date', value)} min={minimumEnd} />
+            <DateField label="Bitiş tarihi" value={form.end_date} onChange={(value) => set('end_date', value)} min={minimumEnd} max={localToday()} />
           </div>
         </div>
         {dateError && <div className="auth-error" role="alert">{dateError}</div>}

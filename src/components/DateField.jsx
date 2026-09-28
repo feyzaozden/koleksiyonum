@@ -1,10 +1,13 @@
 import { useId, useRef, useState } from 'react'
 import { displayDate, dateInputError, parseDate } from '../utils/itemDates'
+import DateCalendar from './DateCalendar'
 
-export default function DateField({ value, onChange, label, min, max }) {
+export default function DateField({ value, onChange, label, min, max, calendarMin = min }) {
   const id = useId()
   const inputs = useRef([])
   const [blurred, setBlurred] = useState(false)
+  const [calendarOpen, setCalendarOpen] = useState(false)
+  const calendarButton = useRef(null)
   const parts = value ? value.split('/') : ['', '', '']
   const error = dateInputError(value, { min, max }) || (blurred && value && !/^\d{2}\/\d{2}\/\d{4}$/.test(value) ? 'Gün, ay ve yılı tamamla.' : '')
   let iso = ''
@@ -29,18 +32,19 @@ export default function DateField({ value, onChange, label, min, max }) {
         <input ref={(element) => { inputs.current[index] = element }} type="text" aria-label={`${label}: ${part}`} inputMode="numeric" autoComplete="off"
           placeholder={index === 2 ? 'yyyy' : index === 1 ? 'mm' : 'dd'} maxLength={index === 2 ? 4 : 2}
           value={parts[index] || ''} aria-invalid={Boolean(error)} aria-describedby={error ? `${id}-error` : undefined}
+          onFocus={(event) => event.target.select()}
           onChange={(event) => updatePart(index, event.target.value)}
           onKeyDown={(event) => {
             if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !/\d/.test(event.key)) event.preventDefault()
           }} />
       </span>)}
-      <span className="date-calendar">
+      <button ref={calendarButton} className="date-calendar date-calendar-toggle" type="button" aria-label={`${label} için takvim aç`} aria-expanded={calendarOpen} aria-controls={`${id}-calendar`} onClick={() => setCalendarOpen(!calendarOpen)}>
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M16 3v4M8 3v4M3 11h18" /></svg>
-        <input type="date" aria-label={`${label} için takvim aç`} value={iso} min={min || '0001-01-01'} max={max || '9999-12-31'}
-          onClick={(event) => { try { event.currentTarget.showPicker?.() } catch { /* Native fallback. */ } }}
-          onChange={(event) => { onChange(displayDate(event.target.value)); setBlurred(false) }} />
-      </span>
+      </button>
     </div>
+    {calendarOpen && <div id={`${id}-calendar`} onKeyDown={(event) => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setCalendarOpen(false); calendarButton.current?.focus() } }}>
+      <DateCalendar value={iso} min={calendarMin} max={max} onSelect={(date) => { onChange(displayDate(date)); setBlurred(false); setCalendarOpen(false); calendarButton.current?.focus() }} />
+    </div>}
     {error && <small id={`${id}-error`} className="date-field-error" role="alert">{error}</small>}
   </div>
 }

@@ -64,7 +64,11 @@ function ProgressDialog({ item, finish, onClose, onSave }) {
           {number('position', item.category === 'kitap' ? 'Kaldığın sayfa' : 'Kaldığın dakika')}
           {number('total', item.category === 'kitap' ? 'Toplam sayfa' : 'Toplam dakika', true)}
         </div>}
-        {finish && <div className="progress-field"><span>Bitiş tarihi</span><DateField label="Bitiş tarihi" value={endDate} onChange={setEndDate} min={item.start_date} /></div>}
+        {finish && <div className="progress-field">
+          <span>Bitiş tarihi</span>
+          <DateField label="Bitiş tarihi" value={endDate} onChange={setEndDate} min={item.start_date} calendarMin="" max={localToday()} />
+          {item.start_date && <small>Kayıtlı başlangıç tarihi: {displayDate(item.start_date)}</small>}
+        </div>}
       </fieldset>
       {(validation || error) && <p className="auth-error" role="alert">{validation || error}</p>}
       <div className="modal-actions">
