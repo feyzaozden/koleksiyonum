@@ -418,6 +418,8 @@ body { background:radial-gradient(ellipse at 0 0, #dedfd8 0, transparent 55%), r
 .date-field-error { display:block; color:#a12626; font-size:.72rem; line-height:1.4; margin-top:5px; }
 .date-calendar-toggle { border:0; padding:0; background:transparent; cursor:pointer; }
 .date-picker-panel { padding:8px; margin-top:6px; border:1px solid var(--border); border-radius:10px; background:var(--surface); }
+.date-picker-popup { position:fixed; z-index:1100; overflow-y:auto; border-radius:10px; box-shadow:0 8px 28px rgba(35,58,52,.18); }
+.date-picker-popup .date-picker-panel { margin-top:0; }
 .date-picker-toolbar { display:flex; gap:3px; align-items:center; margin-bottom:8px; }
 .date-picker-toolbar button { flex:none; }
 .date-picker-panel .date-picker-toolbar select { width:0; flex:1; min-width:0; padding:4px 0; font-size:.75rem; }
