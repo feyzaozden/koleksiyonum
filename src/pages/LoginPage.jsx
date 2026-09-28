@@ -27,7 +27,8 @@ export default function LoginPage() {
       await signIn({ email, password })
       navigate('/app')
     } catch (err) {
-      setError(err.message)
+      const invalidCredentials = err?.code === 'invalid_credentials' || /^invalid login credentials\.?$/i.test(err?.message?.trim() || '')
+      setError(invalidCredentials ? 'E-posta veya şifre yanlış.' : err.message)
       setUnconfirmed(isUnconfirmedError(err))
     } finally {
       setSubmitting(false)
