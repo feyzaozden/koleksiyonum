@@ -35,6 +35,13 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 .privacy-page h1 { margin:24px 0 16px; font-size:1.6rem; }
 .privacy-page p { margin-bottom:16px; color:var(--text-muted); }
 .privacy-page a { color:var(--text); text-underline-offset:3px; }
+.creation-hint { font-size:.76rem; color:var(--text-muted); line-height:1.6; }
+.bulk-import { border-top:1px solid var(--border); padding-top:10px; font-size:.8rem; line-height:1.6; }
+.bulk-import summary { cursor:pointer; color:var(--text-muted); }
+.bulk-import label { display:block; margin:10px 0 6px; }
+.bulk-import textarea { width:100%; min-width:0; padding:10px; border:1px solid var(--border); border-radius:10px; background:var(--surface); color:var(--text); font:inherit; resize:vertical; }
+.bulk-import .btn-add { margin:8px 0; }
+.bulk-import ul { padding-left:20px; max-height:200px; overflow:auto; overflow-wrap:anywhere; }
 .item-reactions-area { margin-top:10px; }
 .item-reactions { display:flex; align-items:center; gap:8px; }
 .item-reactions button, .item-reaction-count { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-width:52px; min-height:36px; padding:6px 10px; border:1px solid var(--border); border-radius:10px; background:var(--surface); color:var(--text-muted); font:inherit; font-size:.78rem; font-variant-numeric:tabular-nums; }

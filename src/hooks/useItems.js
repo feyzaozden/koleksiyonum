@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import { useFriends } from '../context/FriendsContext'
 import { validateItemDates, itemYearError } from '../utils/itemDates'
+import { itemWriteMessage } from '../utils/itemIdentity'
 
 export function useItems(scope = 'circle', ownerId = null) {
   const { user } = useAuth()
@@ -38,8 +39,25 @@ export function useItems(scope = 'circle', ownerId = null) {
     const yearError = itemYearError(payload.year)
     if (yearError) throw new Error(yearError)
     validateItemDates(payload)
-    const { data, error } = await supabase.from('items').insert(payload).select().single()
-    if (error) throw error
+    let data
+    if (payload.source_id != null) {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Lütfen tekrar giriş yap.')
+      const response = await fetch('/api/items', {
+        method: 'POST', headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!response.headers.get('content-type')?.includes('application/json')) throw new Error('Kayıt servisine ulaşılamadı.')
+      const body = await response.json()
+      if (!response.ok) throw new Error(body.error || 'İçerik eklenemedi.')
+      data = body.item
+    } else {
+      const { source_id: unusedSourceId, ...manual } = payload
+      void unusedSourceId
+      const result = await supabase.from('items').insert(manual).select().single()
+      if (result.error) throw new Error(itemWriteMessage(result.error))
+      data = result.data
+    }
     setItems((prev) => [data, ...prev])
     return data
   }
@@ -51,7 +69,7 @@ export function useItems(scope = 'circle', ownerId = null) {
       validateItemDates({ ...items.find((item) => item.id === id), ...patch })
     }
     const { data, error } = await supabase.from('items').update(patch).eq('id', id).select().single()
-    if (error) throw error
+    if (error) throw new Error(itemWriteMessage(error))
     setItems((prev) => prev.map((i) => (i.id === id ? data : i)))
     return data
   }
@@ -62,5 +80,12 @@ export function useItems(scope = 'circle', ownerId = null) {
     setItems((prev) => prev.filter((i) => i.id !== id))
   }
 
-  return { items: items.filter((item) => selectedIds.includes(item.user_id)), loading, error, refresh, addItem, updateItem, deleteItem }
+  async function importItems(entries) {
+    const { data, error } = await supabase.rpc('import_collection_items', { entries })
+    if (error) throw new Error('Liste eklenemedi. Bağlantını ve toplu ekleme kurulumunu kontrol et.')
+    await refresh()
+    return data || []
+  }
+
+  return { items: items.filter((item) => selectedIds.includes(item.user_id)), loading, error, refresh, addItem, updateItem, deleteItem, importItems }
 }

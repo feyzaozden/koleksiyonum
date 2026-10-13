@@ -26,7 +26,7 @@ function applyTabTheme(tab) {
 
 export default function AppPage() {
   const { user, profile } = useAuth()
-  const { items, loading, error: loadError, refresh, addItem, updateItem, deleteItem } = useItems('mine')
+  const { items, loading, error: loadError, refresh, addItem, updateItem, deleteItem, importItems } = useItems('mine')
   const [error, showError] = useErrorToast()
 
   const [activeTab, setActiveTab] = useState('kitap')
@@ -111,7 +111,7 @@ export default function AppPage() {
       <div className="main">
         <StatsBar items={statsItems} labels={tab.statusLabels} />
 
-        <AddForm key={activeTab} category={activeTab} creatorLabel={tab.creatorLabel} onSubmit={handleAdd} />
+        <AddForm key={activeTab} category={activeTab} creatorLabel={tab.creatorLabel} onSubmit={handleAdd} existingItems={statsItems} onImport={importItems} />
         {loadError && <div className="auth-error" role="alert">Koleksiyon yüklenemedi. <button onClick={refresh}>Tekrar dene</button></div>}
         {loading && <p role="status">Koleksiyon yükleniyor…</p>}
         <FilterBar

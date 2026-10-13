@@ -2,7 +2,7 @@
 
 Film sekmesinde bir ad yazılır. 400 ms yazma molasından sonra TMDB'de Türkçe arama yapılır. Sonuçlar afiş, ad ve yıl ile listelenir. Bir sonuç seçildiğinde detayları ve yönetmeni alınır; mevcut formun yalnızca başlık, yönetmen ve yıl alanları dolar. Kullanıcı + Ekle ile kaydeder. Kişisel puan, durum, not, tarihler ve ilerleme TMDB'den alınmaz.
 
-Bu ilk sürüm otomatik form doldurmadır. Yeni tablo veya SQL migration gerektirmez; mevcut kayıtları değiştirmez. Afişler yalnızca arama sonuçlarında gösterilir. TMDB kimliği henüz veritabanına kaydedilmez; ortak katalog/eşleştirme sonraki adımdır. Kitap araması bu sürüme dahil değildir. Elle ekleme kullanılmaya devam eder.
+Arama sonuçları formu doldurur; kaydetme sırasında `/api/items` kaynağı sunucuda doğrular ve TMDB kimliğini de kaydeder. Günlük kota/tekrar kontrolü için yeni migration ve sunucu anahtarı gerekir: ayrıntılar `docs/item-guardrails.md` içindedir. Eski kayıtlar korunur. Afişler yalnızca arama sonuçlarında gösterilir. Kitap araması bu sürüme dahil değildir. Elle ekleme kullanılmaya devam eder.
 
 Dizi sekmesi de aynı akışı kullanır. `/api/series`, TMDB'nin `/search/tv` ve `/tv/{id}` uçlarına bağlanır. `name` başlığa, `first_air_date` ilk yayın yılına, `created_by` yaratıcı alanına aktarılır. Bilgi eksikse elle tamamlanabilir. Platformların ülkeye göre değişen yayın hakları bu alanın yerine kullanılmaz. Sezon/bölüm ilerlemesi, puan, not ve izleme tarihleri otomatik değiştirilmez. Aynı `TMDB_READ_ACCESS_TOKEN` kullanılır; yeni anahtar gerekmez.
 

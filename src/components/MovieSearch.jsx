@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { getMovies } from '../lib/movieApi'
 
-export default function MovieSearch({ category = 'film', onSelect, onPendingChange, disabled }) {
+export default function MovieSearch({ category = 'film', onSelect, onPendingChange, onManual, disabled }) {
   const isSeries = category === 'dizi'
   const label = isSeries ? 'Dizi' : 'Film'
   const plural = isSeries ? 'Diziler' : 'Filmler'
@@ -68,7 +68,7 @@ export default function MovieSearch({ category = 'film', onSelect, onPendingChan
     <div className="movie-search-heading">
       <label htmlFor="movie-query">{manual ? (isSeries ? 'Dizini elle ekle' : 'Filmini elle ekle') : `${label} ara`}</label>
       <button type="button" className="movie-search-switch" disabled={disabled || selecting} onClick={() => {
-        setManual(!manual); setQuery(''); setSelected('')
+        setManual(!manual); setQuery(''); setSelected(''); onManual?.()
       }}>{manual ? `${label} aramaya dön` : 'Kendim eklemek istiyorum'}</button>
     </div>
     {!manual && <>
