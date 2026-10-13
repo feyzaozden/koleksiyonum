@@ -74,7 +74,6 @@ export default function MovieSearch({ category = 'film', onSelect, onPendingChan
     {!manual && <>
       <input ref={searchInput} id="movie-query" type="search" placeholder={isSeries ? 'Dizi adı yaz… Örn. Leyla ile Mecnun' : 'Film adı yaz… Örn. Yıldızlararası'} maxLength={100}
         autoComplete="off" value={query} disabled={disabled || selecting} onChange={(e) => { setQuery(e.target.value); setSelected('') }} />
-      <p className="movie-search-hint">{isSeries ? 'Diziyi seçince başlık, yaratıcı ve ilk yayın yılı aşağıya dolacak.' : 'Filmi seçince başlık, yönetmen ve yıl aşağıya dolacak.'} Sonra + Ekle’ye bas.</p>
       <div role="status" aria-live="polite">
         {selecting ? `${label} bilgileri alınıyor…` : loading ? `${plural} aranıyor…` : selected}
         {!loading && searched && !results.length && `${label} bulunamadı. Özgün adıyla arayabilir veya elle ekleyebilirsin.`}

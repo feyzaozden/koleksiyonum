@@ -35,6 +35,17 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 .privacy-page h1 { margin:24px 0 16px; font-size:1.6rem; }
 .privacy-page p { margin-bottom:16px; color:var(--text-muted); }
 .privacy-page a { color:var(--text); text-underline-offset:3px; }
+.item-reactions-area { margin-top:10px; }
+.item-reactions { display:flex; align-items:center; gap:8px; }
+.item-reactions button, .item-reaction-count { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-width:52px; min-height:36px; padding:6px 10px; border:1px solid var(--border); border-radius:10px; background:var(--surface); color:var(--text-muted); font:inherit; font-size:.78rem; font-variant-numeric:tabular-nums; }
+.item-reactions button { cursor:pointer; }
+.item-reactions button[aria-pressed="true"] { background:var(--surface2); border-color:var(--text); color:var(--text); }
+.item-reactions button:hover:not(:disabled) { border-color:var(--text); }
+.item-reactions button:focus-visible { outline:2px solid var(--text); outline-offset:2px; }
+.item-reactions button:disabled { opacity:.55; cursor:default; }
+.item-reaction-error { margin-top:6px; font-size:.75rem; line-height:1.5; color:var(--text-muted); }
+.item-reaction-error button { border:0; background:none; color:inherit; font:inherit; text-decoration:underline; cursor:pointer; }
+@media (max-width:520px) { .item-reactions button { min-height:44px; } }
 .password-requirements { font-size:.75rem; line-height:1.6; color:var(--text-muted); margin-top:6px; }
 .password-requirements ul { list-style:none; display:grid; gap:3px; }
 .password-requirements .is-met { color:var(--kitap); font-weight:600; }
@@ -154,7 +165,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 .movie-search-heading label { font-size:.88rem; font-weight:600; }
 .movie-search-switch { border:0; background:transparent; color:var(--text); font:inherit; font-size:.76rem; text-decoration:underline; text-underline-offset:3px; padding:8px 0; cursor:pointer; }
 .movie-search > input { width:100%; min-width:0; }
-.movie-search-hint, .movie-search [role="status"] { font-size:.75rem; color:var(--text-muted); line-height:1.6; margin-top:7px; }
+.movie-search [role="status"] { font-size:.75rem; color:var(--text-muted); line-height:1.6; margin-top:7px; }
 .movie-search-results { list-style:none; margin:10px 0 0; padding:0; max-height:330px; overflow-y:auto; overscroll-behavior:contain; border:1px solid var(--border); border-radius:12px; }
 .movie-search-results li + li { border-top:1px solid var(--border); }
 .movie-search-result { display:flex; align-items:center; gap:12px; width:100%; padding:10px; border:0; background:var(--surface); color:var(--text); text-align:left; font:inherit; cursor:pointer; }
