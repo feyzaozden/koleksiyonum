@@ -9,6 +9,7 @@ import DiscoverPage from './pages/DiscoverPage'
 import PersonPage from './pages/PersonPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import AppFooter from './components/AppFooter'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -33,6 +34,8 @@ function PublicOnlyRoute({ children }) {
 
 export default function App() {
   return (
+    <div className="app-shell">
+    <div className="app-content">
     <Routes>
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -45,5 +48,8 @@ export default function App() {
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/app" replace />} />
     </Routes>
+    </div>
+    <AppFooter />
+    </div>
   )
 }

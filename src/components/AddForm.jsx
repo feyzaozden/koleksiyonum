@@ -1,14 +1,17 @@
 import { useState } from 'react'
 import StarInput from './StarInput'
 import DateField from './DateField'
+import MovieSearch from './MovieSearch'
 import { datesFromForm, itemYearError, localToday, parseDate } from '../utils/itemDates'
 
 const EMPTY = { title: '', creator: '', year: '', status: 'bekliyor', note: '', start_date: '', end_date: '', rating: null }
 
-export default function AddForm({ creatorLabel, disabled, onSubmit }) {
+export default function AddForm({ category, creatorLabel, disabled, onSubmit }) {
   const [dateError, setDateError] = useState('')
   const [form, setForm] = useState(EMPTY)
   const [submitting, setSubmitting] = useState(false)
+  const [movieLoading, setMovieLoading] = useState(false)
+  const [searchVersion, setSearchVersion] = useState(0)
 
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }))
@@ -17,14 +20,14 @@ export default function AddForm({ creatorLabel, disabled, onSubmit }) {
   const yearError = itemYearError(form.year)
 
   async function handleSubmit() {
-    if (!form.title.trim() || disabled) return
+    if (!form.title.trim() || disabled || submitting || movieLoading) return
     if (itemYearError(form.year)) return
     let dates
     try { dates = datesFromForm(form); setDateError('') }
     catch (error) { setDateError(error.message); return }
     setSubmitting(true)
     try {
-      await onSubmit({
+      const saved = await onSubmit({
         title: form.title.trim(),
         creator: form.creator.trim() || null,
         year: form.year.trim() || null,
@@ -33,14 +36,21 @@ export default function AddForm({ creatorLabel, disabled, onSubmit }) {
         ...dates,
         rating: form.rating,
       })
+      if (saved === false) return
       setForm(EMPTY)
+      setSearchVersion((value) => value + 1)
+    } catch (error) {
+      setDateError(error.message || 'İçerik eklenemedi. Tekrar dene.')
     } finally {
       setSubmitting(false)
     }
   }
 
   function handleKeyDown(e) {
-    if (e.key === 'Enter') handleSubmit()
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT' && !e.defaultPrevented) {
+      e.preventDefault()
+      handleSubmit()
+    }
   }
 
   let minimumEnd
@@ -48,7 +58,9 @@ export default function AddForm({ creatorLabel, disabled, onSubmit }) {
 
   return (
     <div className="add-form" style={{ opacity: disabled ? 0.35 : 1, pointerEvents: disabled ? 'none' : 'auto' }} onKeyDown={handleKeyDown}>
-      <div className="add-form-label">Yeni Ekle</div>
+      {category === 'film' && <MovieSearch key={searchVersion} disabled={disabled || submitting} onPendingChange={setMovieLoading} onSelect={(movie) => {
+        setForm((current) => ({ ...current, title: movie.title, creator: movie.creator, year: movie.year }))
+      }} />}
       <div className="form-row">
         <input type="text" name="title" placeholder="Başlık *" autoComplete="off" value={form.title} onChange={(e) => set('title', e.target.value)} />
         <input type="text" name="creator" placeholder={creatorLabel} autoComplete="off" value={form.creator} onChange={(e) => set('creator', e.target.value)} />
@@ -77,7 +89,7 @@ export default function AddForm({ creatorLabel, disabled, onSubmit }) {
       <div className="star-row">
         <span className="star-row-label">⭐ Puan (10 üzerinden):</span>
         <StarInput name="add_rating" value={form.rating} onChange={(v) => set('rating', v)} />
-        <button className="btn-add" disabled={disabled || submitting || Boolean(yearError)} onClick={handleSubmit}>
+        <button className="btn-add" disabled={disabled || submitting || movieLoading || Boolean(yearError)} onClick={handleSubmit}>
           {submitting ? '...' : '+ Ekle'}
         </button>
       </div>

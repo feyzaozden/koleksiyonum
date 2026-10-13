@@ -62,6 +62,7 @@ export default function AppPage() {
       await addItem({ ...payload, user_id: user.id, category: activeTab, emoji })
     } catch (e) {
       showError('Eklenemedi: ' + e.message)
+      return false
     }
   }
 
@@ -110,7 +111,7 @@ export default function AppPage() {
       <div className="main">
         <StatsBar items={statsItems} labels={tab.statusLabels} />
 
-        <AddForm creatorLabel={tab.creatorLabel} onSubmit={handleAdd} />
+        <AddForm key={activeTab} category={activeTab} creatorLabel={tab.creatorLabel} onSubmit={handleAdd} />
         {loadError && <div className="auth-error" role="alert">Koleksiyon yüklenemedi. <button onClick={refresh}>Tekrar dene</button></div>}
         {loading && <p role="status">Koleksiyon yükleniyor…</p>}
         <FilterBar

@@ -14,16 +14,22 @@ export default function SignupPage() {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [passwordConfirm, setPasswordConfirm] = useState('')
+  const [confirmTouched, setConfirmTouched] = useState(false)
   const [avatarEmoji, setAvatarEmoji] = useState(AVATAR_CHOICES[0])
   const [showAllAvatars, setShowAllAvatars] = useState(false)
   const [error, setError] = useState(null)
   const [info, setInfo] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const passwordsMismatch = password !== passwordConfirm
+  const showMismatch = passwordsMismatch && (passwordConfirm.length > 0 || confirmTouched)
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
     setInfo(null)
+    setConfirmTouched(true)
+    if (!passwordConfirm || passwordsMismatch) return
     setSubmitting(true)
     try {
       await signUp({ email, password, displayName, username, avatarEmoji })
@@ -57,6 +63,13 @@ export default function SignupPage() {
           <div className="auth-field">
             <label htmlFor="password">Şifre</label>
             <input id="password" type="password" required minLength={PASSWORD_MIN_LENGTH} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} aria-describedby="signup-password-rules" />
+          </div>
+          <div className="auth-field">
+            <label htmlFor="passwordConfirm">Şifreyi tekrar gir</label>
+            <input id="passwordConfirm" type="password" required autoComplete="new-password" value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)} onBlur={() => setConfirmTouched(true)}
+              aria-invalid={showMismatch} aria-describedby={showMismatch ? 'signup-password-match signup-password-rules' : 'signup-password-rules'} />
+            {showMismatch && <small id="signup-password-match" className="auth-error" role="alert">Şifreler eşleşmiyor. İki alana da aynı şifreyi gir.</small>}
             <PasswordRequirements password={password} id="signup-password-rules" />
           </div>
           <div className="auth-field">
