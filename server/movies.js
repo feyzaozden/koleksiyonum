@@ -1,5 +1,10 @@
 // Shared by Vercel and the local Vite server. Never import this file in src/.
-export function createMovieHandler({ env = process.env, fetchImpl = fetch, now = () => new Date() } = {}) {
+export function createMovieHandler(options) { return createMediaHandler('movie', options) }
+export function createSeriesHandler(options) { return createMediaHandler('tv', options) }
+
+function createMediaHandler(type, { env = process.env, fetchImpl = fetch, now = () => new Date() } = {}) {
+  const isSeries = type === 'tv'
+  const label = isSeries ? 'Dizi' : 'Film'
   const cache = new Map()
   return async function movies(req, res) {
     function reply(status, body) {
@@ -20,13 +25,13 @@ export function createMovieHandler({ env = process.env, fetchImpl = fetch, now =
     }
     const authorization = req.headers.authorization
     if (typeof authorization !== 'string' || !/^Bearer \S+$/.test(authorization)) {
-      return reply(401, { error: 'Film aramak için giriş yapmalısın.' })
+      return reply(401, { error: `${label} aramak için giriş yapmalısın.` })
     }
     const token = env.TMDB_READ_ACCESS_TOKEN
     const supabaseUrl = env.VITE_SUPABASE_URL
     const supabaseKey = env.VITE_SUPABASE_ANON_KEY
     if (!token || !supabaseUrl || !supabaseKey) {
-      return reply(503, { error: 'Film araması henüz kullanıma hazır değil. Bilgileri elle ekleyebilirsin.' })
+      return reply(503, { error: `${label} araması henüz kullanıma hazır değil. Bilgileri elle ekleyebilirsin.` })
     }
     try {
       const auth = await fetchImpl(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/user`, {
@@ -43,10 +48,10 @@ export function createMovieHandler({ env = process.env, fetchImpl = fetch, now =
       const key = `${currentYear}:${id ? `id:${id}` : `q:${query.toLocaleLowerCase('tr-TR')}`}`
       const cached = cache.get(key)
       if (cached && cached.until > now().getTime()) return reply(200, cached.body)
-      const url = new URL(`https://api.themoviedb.org/3/${id ? `movie/${id}` : 'search/movie'}`)
+      const url = new URL(`https://api.themoviedb.org/3/${id ? `${type}/${id}` : `search/${type}`}`)
       url.searchParams.set('language', 'tr-TR')
-      if (id) url.searchParams.set('append_to_response', 'credits')
-      else {
+      if (id && !isSeries) url.searchParams.set('append_to_response', 'credits')
+      if (!id) {
         url.searchParams.set('query', query)
         url.searchParams.set('include_adult', 'false')
         url.searchParams.set('page', '1')
@@ -55,29 +60,31 @@ export function createMovieHandler({ env = process.env, fetchImpl = fetch, now =
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         signal: AbortSignal.timeout(8000),
       })
-      if (response.status === 429) return reply(429, { error: 'Film araması şu an yoğun. Biraz sonra tekrar dene.' })
-      if (response.status === 404) return reply(404, { error: 'Film bulunamadı. Başka bir sonuç seçebilirsin.' })
-      if (!response.ok) return reply(502, { error: 'Film bilgilerine şu anda ulaşılamıyor. Elle ekleyebilir veya tekrar deneyebilirsin.' })
+      if (response.status === 429) return reply(429, { error: `${label} araması şu an yoğun. Biraz sonra tekrar dene.` })
+      if (response.status === 404) return reply(404, { error: `${label} bulunamadı. Başka bir sonuç seçebilirsin.` })
+      if (!response.ok) return reply(502, { error: `${label} bilgilerine şu anda ulaşılamıyor. Elle ekleyebilir veya tekrar deneyebilirsin.` })
       const data = await response.json()
-      const allowed = (movie) => !movie.adult && (!movie.release_date || Number(movie.release_date.slice(0, 4)) <= currentYear)
+      const releaseDate = (item) => isSeries ? item.first_air_date : item.release_date
+      const allowed = (movie) => !movie.adult && (!releaseDate(movie) || Number(releaseDate(movie).slice(0, 4)) <= currentYear)
       const summary = (movie) => ({
         id: movie.id,
-        title: movie.title || movie.original_title || '',
-        originalTitle: movie.original_title || '',
-        year: movie.release_date?.slice(0, 4) || '',
+        title: (isSeries ? movie.name || movie.original_name : movie.title || movie.original_title) || '',
+        originalTitle: (isSeries ? movie.original_name : movie.original_title) || '',
+        year: releaseDate(movie)?.slice(0, 4) || '',
         poster: /^\/[a-zA-Z0-9_-]+\.(jpg|png|webp)$/.test(movie.poster_path || '')
           ? `https://image.tmdb.org/t/p/w185${movie.poster_path}` : null,
       })
-      if (id && !allowed(data)) return reply(400, { error: 'Bu film eklenemiyor. Gelecek yıllara ait filmleri şu an ekleyemezsin.' })
-      const body = id ? { movie: {
+      if (id && !allowed(data)) return reply(400, { error: 'Bu içerik eklenemiyor. Gelecek yıllara ait içerikleri şu an ekleyemezsin.' })
+      const creators = isSeries ? (data.created_by || []) : (data.credits?.crew || []).filter((person) => person.job === 'Director')
+      const body = id ? { [isSeries ? 'series' : 'movie']: {
         ...summary(data),
-        creator: [...new Set((data.credits?.crew || []).filter((person) => person.job === 'Director').map((person) => person.name))].join(', '),
+        creator: [...new Set(creators.map((person) => person.name).filter(Boolean))].join(', '),
       } } : { results: (data.results || []).filter(allowed).map(summary) }
       if (cache.size >= 150) cache.delete(cache.keys().next().value)
       cache.set(key, { body, until: now().getTime() + 5 * 60 * 1000 })
       return reply(200, body)
     } catch {
-      return reply(503, { error: 'Film aramasına bağlanılamadı. Biraz sonra tekrar dene veya bilgileri elle ekle.' })
+      return reply(503, { error: `${label} aramasına bağlanılamadı. Biraz sonra tekrar dene veya bilgileri elle ekle.` })
     }
   }
 }

@@ -18,7 +18,7 @@ export const TABS = {
   dizi: {
     label: 'Diziler',
     emoji: '📺',
-    creatorLabel: 'Yapımcı / Platform',
+    creatorLabel: 'Yaratıcı / Yapımcı',
     emojis: ['📺', '🖥️', '📡', '🎭', '▶️'],
     statusLabels: { bekliyor: 'İzlenecek', devam: 'İzleniyor', bitti: 'İzlendi' },
     colorVar: 'dizi',

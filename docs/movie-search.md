@@ -1,8 +1,10 @@
-# Film araması — ilk adım
+# Film ve dizi araması — ilk adım
 
 Film sekmesinde bir ad yazılır. 400 ms yazma molasından sonra TMDB'de Türkçe arama yapılır. Sonuçlar afiş, ad ve yıl ile listelenir. Bir sonuç seçildiğinde detayları ve yönetmeni alınır; mevcut formun yalnızca başlık, yönetmen ve yıl alanları dolar. Kullanıcı + Ekle ile kaydeder. Kişisel puan, durum, not, tarihler ve ilerleme TMDB'den alınmaz.
 
-Bu ilk sürüm otomatik form doldurmadır. Yeni tablo veya SQL migration gerektirmez; mevcut kayıtları değiştirmez. Afişler yalnızca arama sonuçlarında gösterilir. TMDB kimliği henüz veritabanına kaydedilmez; ortak katalog/eşleştirme sonraki adımdır. Kitap ve dizi araması bu sürüme dahil değildir. Elle ekleme kullanılmaya devam eder.
+Bu ilk sürüm otomatik form doldurmadır. Yeni tablo veya SQL migration gerektirmez; mevcut kayıtları değiştirmez. Afişler yalnızca arama sonuçlarında gösterilir. TMDB kimliği henüz veritabanına kaydedilmez; ortak katalog/eşleştirme sonraki adımdır. Kitap araması bu sürüme dahil değildir. Elle ekleme kullanılmaya devam eder.
+
+Dizi sekmesi de aynı akışı kullanır. `/api/series`, TMDB'nin `/search/tv` ve `/tv/{id}` uçlarına bağlanır. `name` başlığa, `first_air_date` ilk yayın yılına, `created_by` yaratıcı alanına aktarılır. Bilgi eksikse elle tamamlanabilir. Platformların ülkeye göre değişen yayın hakları bu alanın yerine kullanılmaz. Sezon/bölüm ilerlemesi, puan, not ve izleme tarihleri otomatik değiştirilmez. Aynı `TMDB_READ_ACCESS_TOKEN` kullanılır; yeni anahtar gerekmez.
 
 ## 1. TMDB erişimini oluştur
 
@@ -38,6 +40,7 @@ Bu çalışma kendiliğinden push/deploy yapmaz. Anahtar olmadan film araması a
 - `src/components/MovieSearch.jsx`: yazma beklemesi, sonuçlar, seçim, eski isteklerin iptali, hata/boş sonuç/elle ekleme.
 - `src/lib/movieApi.js`: mevcut Supabase oturum token'ı ile kendi `/api/movies` adresimize istek.
 - `api/movies.js`: Vercel sunucu fonksiyonunun giriş noktası.
+- `api/series.js`: dizi araması için Vercel giriş noktası; aynı sunucu mantığını ayrı önbellekle kullanır.
 - `server/movies.js`: Supabase üzerinden oturum doğrulaması, TMDB'ye sabit adreslerden istek, Türkçe hata mesajları, 8 saniyelik istek zaman aşımı ve sınırlı 5 dakikalık bellek önbelleği. Önbellek her sunucu örneğine aittir, kalıcı veya dağıtık değildir.
 - `vite.config.js`: aynı sunucu fonksiyonunu yerel geliştirme ve preview sunucusuna bağlar; ayrı backend terminali gerekmez.
 - `vercel.json`: API isteklerini SPA HTML yönlendirmesinin dışında tutar.
@@ -46,6 +49,7 @@ Bu çalışma kendiliğinden push/deploy yapmaz. Anahtar olmadan film araması a
 ## Kontrol listesi
 
 - Film ara/seç/kaydet; sayfayı yenileyince kaydın kaldığını doğrula.
+- Dizi sekmesinde Leyla ile Mecnun ara; seçimden sonra başlık, yaratıcı ve ilk yayın yılını kontrol et. Puan/not/tarih alanlarının korunmasını ve kitap sekmesinin elle eklemeye devam etmesini doğrula.
 - Sonuç yokken ve API ulaşılamazken elle eklemeyi dene.
 - Yazarken hızlıca sorguyu veya kategoriyi değiştir: eski sonuçlar yeni forma gelmemeli.
 - Arama alanında Enter tuşu koleksiyona kayıt eklememeli.

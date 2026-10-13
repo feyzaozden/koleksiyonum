@@ -1,10 +1,72 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { createMovieHandler } from '../server/movies.js'
+import { createMovieHandler, createSeriesHandler } from '../server/movies.js'
 
 const env = { TMDB_READ_ACCESS_TOKEN: 'secret-token', VITE_SUPABASE_URL: 'https://example.supabase.co', VITE_SUPABASE_ANON_KEY: 'public-key' }
 const now = () => new Date('2026-10-13T12:00:00Z')
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status })
+
+test('series search uses TV fields and filters future first-air years', async () => {
+  const handler = createSeriesHandler({ env, now, fetchImpl: async (url) => {
+    if (String(url).includes('/auth/v1/user')) return json({ id: 'user-1' })
+    assert.equal(url.pathname, '/3/search/tv')
+    assert.equal(url.searchParams.get('language'), 'tr-TR')
+    assert.equal(url.searchParams.get('include_adult'), 'false')
+    return json({ results: [
+      { id: 1, name: 'Dizi', original_name: 'Series', first_air_date: '2011-02-09', poster_path: '/poster.jpg' },
+      { id: 2, name: 'Future', first_air_date: '2027-01-01', release_date: '2000-01-01' },
+      { id: 3, name: 'Adult', adult: true },
+      { id: 4, original_name: 'Unknown', first_air_date: '' },
+    ] })
+  } })
+  const response = await invoke(handler, '/api/series?q=Dizi')
+  assert.equal(response.statusCode, 200)
+  assert.deepEqual(response.body.results.map((item) => item.id), [1, 4])
+  assert.equal(response.body.results[0].title, 'Dizi')
+  assert.equal(response.body.results[0].year, '2011')
+  assert.equal(response.body.results[1].title, 'Unknown')
+  assert.equal(response.body.results[1].year, '')
+})
+
+test('series details use creators and first air date, without importing watched progress', async () => {
+  const handler = createSeriesHandler({ env, now, fetchImpl: async (url) => {
+    if (String(url).includes('/auth/v1/user')) return json({ id: 'user-1' })
+    assert.equal(url.pathname, '/3/tv/12')
+    assert.equal(url.searchParams.has('append_to_response'), false)
+    return json({ id: 12, name: 'Dizi', first_air_date: '2011-01-01', last_air_date: '2026-01-01',
+      created_by: [{ name: 'A' }, { name: 'A' }, { name: 'B' }], number_of_seasons: 5, number_of_episodes: 90, vote_average: 9 })
+  } })
+  const response = await invoke(handler, '/api/series?id=12')
+  assert.equal(response.body.series.creator, 'A, B')
+  assert.equal(response.body.series.year, '2011')
+  assert.equal(response.body.series.rating, undefined)
+  assert.equal(response.body.series.progress, undefined)
+  assert.equal(response.body.movie, undefined)
+})
+
+test('series missing creators are editable, while future details and expired sessions are rejected', async () => {
+  for (const future of [false, true]) {
+    const handler = createSeriesHandler({ env, now, fetchImpl: async (url) => String(url).includes('/auth/v1/user')
+      ? json({ id: 'user-1' }) : json({ id: 12, name: 'Dizi', first_air_date: future ? '2027-01-01' : '' }) })
+    const response = await invoke(handler, '/api/series?id=12')
+    assert.equal(response.statusCode, future ? 400 : 200)
+    if (!future) assert.equal(response.body.series.creator, '')
+  }
+  let calls = 0
+  const handler = createSeriesHandler({ env, fetchImpl: async () => { calls++; return json({}, 401) } })
+  const response = await invoke(handler, '/api/series?q=Dizi')
+  assert.equal(response.statusCode, 401)
+  assert.equal(calls, 1)
+})
+
+test('film and series handlers keep independent caches for the same ID', async () => {
+  const options = { env, now, fetchImpl: async (url) => String(url).includes('/auth/v1/user')
+    ? json({ id: 'user-1' }) : json({ id: 12, title: 'Film', name: 'Dizi' }) }
+  const film = await invoke(createMovieHandler(options), '/api/movies?id=12')
+  const series = await invoke(createSeriesHandler(options), '/api/series?id=12')
+  assert.equal(film.body.movie.title, 'Film')
+  assert.equal(series.body.series.title, 'Dizi')
+})
 async function invoke(handler, url = '/api/movies?q=Matrix', headers = { authorization: 'Bearer user-jwt' }, method = 'GET') {
   const res = { headers: {}, setHeader(key, value) { this.headers[key] = value }, end(body) { this.body = JSON.parse(body) } }
   await handler({ method, url, headers }, res)

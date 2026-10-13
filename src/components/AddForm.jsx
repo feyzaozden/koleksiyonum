@@ -58,7 +58,7 @@ export default function AddForm({ category, creatorLabel, disabled, onSubmit }) 
 
   return (
     <div className="add-form" style={{ opacity: disabled ? 0.35 : 1, pointerEvents: disabled ? 'none' : 'auto' }} onKeyDown={handleKeyDown}>
-      {category === 'film' && <MovieSearch key={searchVersion} disabled={disabled || submitting} onPendingChange={setMovieLoading} onSelect={(movie) => {
+      {(category === 'film' || category === 'dizi') && <MovieSearch key={`${category}-${searchVersion}`} category={category} disabled={disabled || submitting} onPendingChange={setMovieLoading} onSelect={(movie) => {
         setForm((current) => ({ ...current, title: movie.title, creator: movie.creator, year: movie.year }))
       }} />}
       <div className="form-row">
