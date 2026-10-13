@@ -1,28 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import StarInput from './StarInput'
 import DateField from './DateField'
 import MovieSearch from './MovieSearch'
-import BulkImport from './BulkImport'
 import { datesFromForm, itemYearError, localToday, parseDate } from '../utils/itemDates'
-import { supabase } from '../lib/supabaseClient'
 import { normalizeItemTitle } from '../utils/itemIdentity'
 
 const EMPTY = { title: '', creator: '', year: '', status: 'bekliyor', note: '', start_date: '', end_date: '', rating: null }
 
-export default function AddForm({ category, creatorLabel, disabled, onSubmit, existingItems = [], onImport }) {
+export default function AddForm({ category, creatorLabel, disabled, onSubmit, existingItems = [] }) {
   const [dateError, setDateError] = useState('')
   const [form, setForm] = useState(EMPTY)
   const [submitting, setSubmitting] = useState(false)
   const [movieLoading, setMovieLoading] = useState(false)
   const [searchVersion, setSearchVersion] = useState(0)
   const [sourceId, setSourceId] = useState(null)
-  const [usage, setUsage] = useState(null)
-  const [usageVersion, setUsageVersion] = useState(0)
-  useEffect(() => {
-    let active = true
-    supabase.rpc('get_item_creation_status').then(({ data, error }) => { if (active) setUsage(error ? null : data) })
-    return () => { active = false }
-  }, [usageVersion])
   const similar = form.title.trim() && existingItems.some((item) => normalizeItemTitle(item.title) === normalizeItemTitle(form.title))
 
   function set(field, value) {
@@ -57,7 +48,6 @@ export default function AddForm({ category, creatorLabel, disabled, onSubmit, ex
       setDateError(error.message || 'İçerik eklenemedi. Tekrar dene.')
     } finally {
       setSubmitting(false)
-      setUsageVersion((value) => value + 1)
     }
   }
 
@@ -103,7 +93,6 @@ export default function AddForm({ category, creatorLabel, disabled, onSubmit, ex
       </div>
       {dateError && <div className="auth-error" role="alert">{dateError}</div>}
       {similar && <p className="creation-hint" role="status">Bu başlık koleksiyonunda var. Aynı eserse mevcut kaydı düzenle; farklı bir eserse yıl ve yazar bilgisini kontrol et.</p>}
-      {usage && <p className="creation-hint">{usage.blocked ? 'Yeni içerik eklemen kısıtlandı. Destek adresiyle iletişime geçebilirsin.' : `Bugün ${usage.used}/100 içerik ekledin. Hakların Türkiye saatiyle 00:00’da yenilenir.`}</p>}
       <div className="star-row">
         <span className="star-row-label">⭐ Puan (10 üzerinden):</span>
         <StarInput name="add_rating" value={form.rating} onChange={(v) => set('rating', v)} />
@@ -111,7 +100,6 @@ export default function AddForm({ category, creatorLabel, disabled, onSubmit, ex
           {submitting ? '...' : '+ Ekle'}
         </button>
       </div>
-      {onImport && <BulkImport category={category} disabled={disabled || submitting} onImport={onImport} onComplete={() => setUsageVersion((value) => value + 1)} />}
     </div>
   )
 }

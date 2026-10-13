@@ -26,7 +26,7 @@ Resmi anahtar belgesi: https://supabase.com/docs/guides/getting-started/api-keys
 
 ## Toplu ekleme
 
-Ekleme formundaki **Listeden toplu ekle** bölümünde her satır `Başlık | Yazar veya yönetmen | Yıl` biçimindedir. Son iki alan isteğe bağlıdır. Bu akış elle ekleme kurallarını kullanır; TMDB kimliği doğrulanmış arama seçimi sayılmaz. Durum bekliyor olur. Sonuçlar eklendi/zaten mevcut/eklenemedi olarak ayrılır; hata alan satırlar düzenlemek üzere kutuda kalır. Kitaplarda bu bir API araması değildir.
+Kullan?c? aray?z?nde toplu ekleme b?l?m? bulunmaz. G?nl?k kullan?m sayac? ve hak yenilenme bilgisi de formda g?sterilmez; g?nl?k s?n?r veritaban?nda uygulanmaya devam eder.
 
 `import_collection_items` RPC'si en fazla 100 satır kabul eder; her satır kendi hata bloğunda işlenir. Diğer hesaba yazma ve kaynak/sayaç/tarih alanını sahteleme engellenir. Ham çok satırlı SQL/REST insert normal PostgreSQL davranışıyla tümü birlikte başarılı/başarısız olabilir; kısmi başarı için bu RPC kullanılır.
 
