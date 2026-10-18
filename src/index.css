@@ -505,6 +505,12 @@ body { background:radial-gradient(ellipse at 0 0, #dedfd8 0, transparent 55%), r
 .progress-field > input { width:100%; min-width:0; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); font:inherit; }
 
 /* Reaction notifications */
+.announcement-card { margin-top:12px; padding:14px; border:1px solid var(--border); border-radius:12px; background:var(--surface); }
+.announcement-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--text-muted); }
+.announcement-card h3 { font-size:.9rem; margin:12px 0 8px; line-height:1.5; }
+.announcement-card p { font-size:.82rem; line-height:1.65; margin-bottom:12px; }
+.announcement-card time { display:block; font-size:.75rem; color:var(--text-muted); }
+.announcement-card button { margin-top:10px; border:1px solid var(--border); border-radius:8px; background:var(--surface2); color:var(--text); font:inherit; font-size:.8rem; padding:8px 12px; cursor:pointer; }
 .profile-privacy { border:1px solid var(--border); border-radius:12px; padding:16px; color:var(--text); }
 .profile-privacy legend { padding:0 6px; font-weight:600; }
 .profile-privacy label { display:flex; align-items:center; gap:8px; cursor:pointer; }

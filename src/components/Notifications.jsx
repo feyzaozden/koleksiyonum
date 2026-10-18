@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
+import { ANNOUNCEMENTS, announcementReads } from '../constants/announcements'
 
 export default function Notifications() {
   const { user } = useAuth()
@@ -17,6 +18,24 @@ export default function Notifications() {
   const [busy, setBusy] = useState(false)
   const [more, setMore] = useState(false)
   const [retry, setRetry] = useState(0)
+  const [announcementBusy, setAnnouncementBusy] = useState(false)
+  const [announcementError, setAnnouncementError] = useState('')
+  const readAnnouncements = announcementReads(user)
+  const totalUnread = unread + ANNOUNCEMENTS.filter(entry => !readAnnouncements.includes(entry.id)).length
+
+  async function readAnnouncement(id) {
+    if (announcementBusy || !user) return
+    setAnnouncementBusy(true)
+    setAnnouncementError('')
+    try {
+      const { error: failure } = await supabase.auth.updateUser({
+        data: { announcement_reads: [...new Set([...readAnnouncements, id])] },
+      })
+      if (failure) throw failure
+    } catch {
+      setAnnouncementError('Okundu bilgisi kaydedilemedi. Tekrar dene.')
+    } finally { setAnnouncementBusy(false) }
+  }
 
   useEffect(() => {
     let active = true
@@ -73,13 +92,23 @@ export default function Notifications() {
   return <div className="notifications" ref={root}>
     <button ref={bell} type="button" className="btn-imdb-link" aria-expanded={open} aria-controls="notifications-panel" onClick={() => setOpen(v => !v)}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg>
-      Bildirimlerim {unread > 0 && <span className="nav-badge" aria-label={`${unread} okunmamış bildirim`}>{unread > 99 ? '99+' : unread}</span>}
+      Bildirimlerim {totalUnread > 0 && <span className="nav-badge" aria-label={`${totalUnread} okunmamış bildirim`}>{totalUnread > 99 ? '99+' : totalUnread}</span>}
     </button>
     {open && <section id="notifications-panel" className="notifications-panel" aria-label="Bildirimlerim">
       <strong>Bildirimlerim</strong>
+      <div className="announcement-list" aria-label="Koleksiyonum’dan yenilikler">
+        {ANNOUNCEMENTS.map(entry => <article className="announcement-card" key={entry.id}>
+          <div className="announcement-heading"><small>Koleksiyonum’dan yenilikler</small>{!readAnnouncements.includes(entry.id) && <span className="nav-badge">Yeni</span>}</div>
+          <h3>🔔 {entry.title}</h3>
+          <p>{entry.text}</p>
+          <time dateTime={entry.date}>{new Date(`${entry.date}T12:00:00`).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</time>
+          {!readAnnouncements.includes(entry.id) && <button type="button" disabled={announcementBusy} onClick={() => readAnnouncement(entry.id)}>{announcementBusy ? 'Kaydediliyor…' : 'Okudum'}</button>}
+        </article>)}
+        {announcementError && <p role="alert">{announcementError}</p>}
+      </div>
       {loading && <p role="status">Yükleniyor…</p>}
       {error && <p role="alert">{error} <button onClick={() => setRetry(n => n + 1)}>Tekrar dene</button></p>}
-      {!loading && !error && !entries.length && <p>Henüz bildirimin yok.</p>}
+      {!loading && !error && !entries.length && <p>Henüz tepki bildirimin yok.</p>}
       <ul>{entries.map(entry => <li key={entry.id}><button className={`notification-entry ${entry.read_at ? '' : 'unread'}`} disabled={busy} onClick={() => visit(entry)}>
         <span>Bir kişi <strong>{entry.title}</strong> {({ film: 'filmine', dizi: 'dizine', kitap: 'kitabına' })[entry.category] || 'içeriğine'} {entry.reaction === 1 ? 'beğeni' : 'beğenmeme'} bıraktı.</span>
         <time dateTime={entry.created_at}>{new Date(entry.created_at).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' })}</time>
