@@ -12,7 +12,7 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
   const statusIcon = item.status === 'bekliyor' ? '⏳' : item.status === 'devam' ? '▶️' : '✅'
 
   return (
-    <div className="item-card">
+    <div className="item-card" id={`item-${item.id}`} tabIndex={-1}>
       <div className="item-emoji">{item.emoji}</div>
       <div className="item-body">
         <div className="item-title">{item.title}</div>

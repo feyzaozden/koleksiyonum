@@ -1,6 +1,6 @@
 import ProfileAvatar from '../components/ProfileAvatar'
-import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useItems } from '../hooks/useItems'
 import AppHeader from '../components/AppHeader'
@@ -26,6 +26,9 @@ function applyTabTheme(tab) {
 
 export default function AppPage() {
   const { user, profile } = useAuth()
+  const location = useLocation()
+  const handledNotification = useRef(null)
+  const [highlight, setHighlight] = useState(null)
   const { items, loading, error: loadError, refresh, addItem, updateItem, deleteItem } = useItems('mine')
   const [error, showError] = useErrorToast()
 
@@ -47,6 +50,30 @@ export default function AppPage() {
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [])
+
+  useEffect(() => {
+    if (loading || loadError || handledNotification.current === location.key) return
+    const target = new URLSearchParams(location.search).get('item')
+    if (!target) return
+    handledNotification.current = location.key
+    const item = items.find(entry => String(entry.id) === target)
+    if (!item) { showError('Bu içerik artık mevcut değil.'); return }
+    setActiveTab(item.category)
+    setStatusFilter('tumu')
+    setSearch('')
+    setHighlight({ id: item.id, key: location.key })
+  }, [location, loading, loadError, items, showError])
+
+  useEffect(() => {
+    if (!highlight) return
+    const card = document.getElementById('item-' + highlight.id)
+    if (!card) return
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    card.focus({ preventScroll: true })
+    card.classList.add('notification-highlight')
+    const timer = setTimeout(() => card.classList.remove('notification-highlight'), 4000)
+    return () => { clearTimeout(timer); card.classList.remove('notification-highlight') }
+  }, [highlight])
 
   const tab = TABS[activeTab]
   const sections = [{

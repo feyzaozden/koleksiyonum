@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { useFriends } from '../context/FriendsContext'
 import Brand from './Brand'
+import Notifications from './Notifications'
 
 export default function AppHeader() {
   const { incoming } = useFriends()
@@ -16,6 +17,7 @@ export default function AppHeader() {
         <NavLink className="btn-imdb-link" to="/imdb">⭐ IMDb</NavLink>
         <NavLink className="btn-imdb-link" to="/profile">Profilim</NavLink>
         </div>
+        <Notifications />
       </nav>
     </header>
   )
