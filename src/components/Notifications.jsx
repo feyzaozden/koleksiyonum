@@ -99,7 +99,7 @@ export default function Notifications() {
       <div className="announcement-list" aria-label="Koleksiyonum’dan yenilikler">
         {ANNOUNCEMENTS.map(entry => <article className="announcement-card" key={entry.id}>
           <div className="announcement-heading"><small>Koleksiyonum’dan yenilikler</small>{!readAnnouncements.includes(entry.id) && <span className="nav-badge">Yeni</span>}</div>
-          <h3>🔔 {entry.title}</h3>
+          <h3>{entry.icon || '🔔'} {entry.title}</h3>
           <p>{entry.text}</p>
           <time dateTime={entry.date}>{new Date(`${entry.date}T12:00:00`).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</time>
           {!readAnnouncements.includes(entry.id) && <button type="button" disabled={announcementBusy} onClick={() => readAnnouncement(entry.id)}>{announcementBusy ? 'Kaydediliyor…' : 'Okudum'}</button>}
