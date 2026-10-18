@@ -49,7 +49,7 @@ export default function DiscoverPage() {
           <p>{person.bio || 'Yeni hikâyelerin peşinde.'}</p>
           {friends.relationship(person.id)?.status === 'pending' && <small>{friends.relationship(person.id).recipient_id === user.id ? 'Sana arkadaşlık isteği gönderdi' : 'Gönderdiğin istek'}</small>}
           {friends.friendIds.includes(person.id) && <Link className="collection-link" to={`/people/${person.id}`}>Koleksiyonunu görüntüle →</Link>}
-          <FriendActions personId={person.id} />
+          <FriendActions personId={person.id} isPublic={person.is_public} />
         </article>)}</div>}
       {tab === 'search' && <div className="pagination"><button disabled={page === 0 || people.loading} onClick={() => setPage(page - 1)}>Önceki</button><span>Sayfa {page + 1}</span><button disabled={!people.hasMore || people.loading} onClick={() => setPage(page + 1)}>Sonraki</button></div>}
     </main>

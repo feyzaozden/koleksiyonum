@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useFriends } from '../context/FriendsContext'
 
-export default function FriendActions({ personId }) {
+export default function FriendActions({ personId, isPublic = false }) {
   const { user } = useAuth()
   const friends = useFriends()
   const [busy, setBusy] = useState(false)
@@ -22,7 +22,7 @@ export default function FriendActions({ personId }) {
     <div className="friend-actions">
       {relation?.status === 'accepted' ? (
         confirming ? <>
-          <span>Arkadaşlığı kaldırınca koleksiyonlarınız birbirinize kapanır.</span>
+          <span>Arkadaşlığı kaldırınca gizli hesapların içeriklerine erişim kapanır. Açık hesaplar görünmeye devam eder.</span>
           <button disabled={disabled} onClick={() => perform(() => friends.remove(relation.id))}>Arkadaşlığı kaldır</button>
           <button disabled={busy} onClick={() => setConfirming(false)}>Vazgeç</button>
         </> : <><span className="friend-status">✓ Arkadaşsınız</span><button disabled={disabled} onClick={() => setConfirming(true)}>Arkadaşlıktan çıkar</button></>
@@ -31,9 +31,11 @@ export default function FriendActions({ personId }) {
         <button disabled={disabled} onClick={() => perform(() => friends.remove(relation.id))}>Reddet</button>
       </> : relation ? <>
         <span className="friend-status">İstek bekliyor</span>
+        {isPublic && <button disabled={disabled} onClick={() => perform(() => friends.send(personId))}>Arkadaş ol</button>}
         <button disabled={disabled} onClick={() => perform(() => friends.remove(relation.id))}>İsteği geri çek</button>
       </> : <button className="primary" disabled={disabled} onClick={() => perform(() => friends.send(personId))}>Arkadaş ekle</button>}
       {busy && <span role="status">İşleniyor…</span>}
+      {isPublic && relation?.status !== 'accepted' && <small>Açık hesap: eklediğinde doğrudan arkadaş olursunuz ve o da senin içeriklerini görebilir.</small>}
       {error && <p className="auth-error" role="alert">{error}</p>}
     </div>
   )

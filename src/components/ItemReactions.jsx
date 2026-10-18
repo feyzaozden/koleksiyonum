@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useFriends } from '../context/FriendsContext'
 
 function Thumb({ down }) {
   return <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={down ? { transform: 'rotate(180deg)' } : undefined}>
@@ -9,8 +10,9 @@ function Thumb({ down }) {
 
 export default function ItemReactions({ item, counts, busy, loadError, onReact, onRetry }) {
   const { user } = useAuth()
+  const friends = useFriends()
   const [error, setError] = useState('')
-  const own = item.user_id === user?.id
+  const own = item.user_id === user?.id || !friends.friendIds.includes(item.user_id)
   async function vote(value) {
     setError('')
     try { await onReact(item.id, counts.my_reaction === value ? null : value) }

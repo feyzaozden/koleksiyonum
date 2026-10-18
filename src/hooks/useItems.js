@@ -10,8 +10,10 @@ export function useItems(scope = 'circle', ownerId = null) {
   const friends = useFriends()
   const allowedIds = scope === 'mine' ? [user?.id].filter(Boolean)
     : friends.loading || friends.error ? [] : [user?.id, ...friends.friendIds].filter(Boolean)
-  const selectedIds = ownerId ? allowedIds.filter((id) => id === ownerId) : allowedIds
+  // Profile views rely on database RLS; the circle/IMDb feed remains friends-only.
+  const selectedIds = scope === 'profile' ? (user && ownerId ? [ownerId] : []) : ownerId ? allowedIds.filter((id) => id === ownerId) : allowedIds
   const idsKey = JSON.stringify(selectedIds)
+  const accessKey = scope === 'profile' ? JSON.stringify(friends.friendIds) : ''
   const version = useRef(0)
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -31,9 +33,12 @@ export function useItems(scope = 'circle', ownerId = null) {
 
   useEffect(() => {
     refresh()
+    const onFocus = () => refresh()
+    const timer = scope === 'profile' ? setInterval(() => { if (!document.hidden) refresh() }, 30000) : null
+    if (scope === 'profile') window.addEventListener('focus', onFocus)
     const counter = version
-    return () => { counter.current++ }
-  }, [refresh])
+    return () => { counter.current++; clearInterval(timer); window.removeEventListener('focus', onFocus) }
+  }, [refresh, scope, accessKey])
 
   async function addItem(payload) {
     const yearError = itemYearError(payload.year)

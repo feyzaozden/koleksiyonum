@@ -13,6 +13,7 @@ export default function ProfilePage() {
   const [signingOut, setSigningOut] = useState(false)
   const [changingPassword, setChangingPassword] = useState(false)
   const [bio, setBio] = useState('')
+  const [isPublic, setIsPublic] = useState(false)
   const [displayName, setDisplayName] = useState('')
   const [username, setUsername] = useState('')
   const [avatarEmoji, setAvatarEmoji] = useState(AVATAR_CHOICES[0])
@@ -26,9 +27,10 @@ export default function ProfilePage() {
       setDisplayName(profile.display_name || '')
       setUsername(profile.username || '')
       setBio(profile.bio || '')
+      setIsPublic(profile.is_public === true)
       setAvatarEmoji(profile.avatar_emoji || AVATAR_CHOICES[0])
     }
-  }, [profile?.id, profile?.display_name, profile?.username, profile?.bio, profile?.avatar_emoji])
+  }, [profile?.id, profile?.display_name, profile?.username, profile?.bio, profile?.avatar_emoji, profile?.is_public])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -37,7 +39,7 @@ export default function ProfilePage() {
     setSaved(false)
     setSaving(true)
     try {
-      await updateProfile({ display_name: displayName.trim(), username, avatar_emoji: avatarEmoji, bio: bio.trim() })
+      await updateProfile({ display_name: displayName.trim(), username, avatar_emoji: avatarEmoji, bio: bio.trim(), is_public: isPublic })
       setSaved(true)
     } catch (err) {
       setError(err.message)
@@ -109,6 +111,11 @@ export default function ProfilePage() {
             <textarea id="bio" maxLength={160} rows={3} value={bio} onChange={(e) => { setBio(e.target.value); setSaved(false) }} />
             <small>Keşfet’te herkes görebilir. {bio.length}/160</small>
           </div>
+          <fieldset className="profile-privacy" disabled={saving || changingPassword || signingOut || uploadingPhoto}>
+            <legend>Hesap gizliliği</legend>
+            <label><input type="radio" name="privacy" checked={!isPublic} onChange={() => { setIsPublic(false); setSaved(false) }} /> Gizli hesap</label>
+            <label><input type="radio" name="privacy" checked={isPublic} onChange={() => { setIsPublic(true); setSaved(false) }} /> Açık hesap</label>
+          </fieldset>
           <button className="auth-btn" type="submit" disabled={saving || changingPassword || signingOut || uploadingPhoto}>
             {saving ? 'Kaydediliyor...' : 'Kaydet'}
           </button>

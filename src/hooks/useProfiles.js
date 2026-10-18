@@ -6,10 +6,10 @@ export function useProfiles({ search = '', ids = null, page = 0 } = {}) {
   const idsKey = ids === null ? null : JSON.stringify(ids)
   const [state, setState] = useState({ profiles: [], loading: true, error: null, hasMore: false })
   const version = useRef(0)
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (background = false) => {
     const request = ++version.current
-    setState({ profiles: [], loading: true, error: null, hasMore: false })
-    let query = supabase.from('profiles').select('id, display_name, username, avatar_emoji, avatar_path, bio').order('username').order('id')
+    if (!background) setState({ profiles: [], loading: true, error: null, hasMore: false })
+    let query = supabase.from('profiles').select('id, display_name, username, avatar_emoji, avatar_path, bio, is_public').order('username').order('id')
     if (idsKey !== null) {
       const selected = JSON.parse(idsKey)
       if (!selected.length) { setState({ profiles: [], loading: false, error: null, hasMore: false }); return }
@@ -25,8 +25,11 @@ export function useProfiles({ search = '', ids = null, page = 0 } = {}) {
   }, [search, idsKey, page])
   useEffect(() => {
     refresh()
+    const onFocus = () => refresh(true)
+    const timer = setInterval(() => { if (!document.hidden) refresh(true) }, 30000)
+    window.addEventListener('focus', onFocus)
     const counter = version
-    return () => { counter.current++ }
+    return () => { counter.current++; clearInterval(timer); window.removeEventListener('focus', onFocus) }
   }, [refresh])
   const byId = Object.fromEntries(state.profiles.map((p) => [p.id, p]))
   return { ...state, byId, refresh }
