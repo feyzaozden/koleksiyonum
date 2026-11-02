@@ -1,5 +1,11 @@
 # Yönetici aktivite geçmişi
 
+## Sekmeyi kapatıp yeniden açma
+
+`20261102_site_open_activity.sql` ek migration'ını çalıştırıp güncel arayüzü yayımla. Oturumu açık kullanıcı siteyi yeni bir belgede/sekmede açtığında `site_opened`, sayfayı yenilediğinde `page_reloaded` kaydı oluşur. Uygulama içindeki sekme/rota değişimi ve token yenilemesi bu kaydı üretmez. React tekrarları ve ağ yeniden denemeleri aynı belge kimliğiyle tekilleştirilir. Bu kimlik oturum anahtarı değildir; rastgele ziyaret tekilleştirme kimliğidir. Ziyaret kaydı giriş yapıldıktan ve sayfa görünür olduktan sonra gönderilir. Tarayıcı geri/ileri önbelleğinden aynı belgeyi geri yüklerse yeni açılış yerine mevcut yaklaşık aktiflik takibi devreye girer.
+
+Bu kayıtlar tarayıcı bildirimine dayanır; ağ/engelleyici nedeniyle eksik olabilir ve kesin giriş kanıtı sayılmaz. Şifre ile gerçek girişler `auth_login` olarak ayrıca kalır. `site_visit` ise 30 dakikalık aranın ardından bildirilen aktivite grubudur; toplam açılış sayarken bu olayları `site_opened` ile toplayarak çift sayma. Sekmenin kapatılma zamanı güvenilir biçimde kaydedilmez.
+
 ## Gerçek giriş kayıtları
 
 İlk aktivite migration'ından sonra `supabase/migrations/20261102_auth_activity.sql` dosyasını SQL Editor'da çalıştır. Bu ek migration Supabase `auth.sessions` tablosunda yeni oturum oluştuğunda `auth_login` kaydı oluşturur. Kullanıcı kimliği ve zaman Auth verisinden gelir; tarayıcının bildirim göndermesine veya yeni arayüzün yayımlanmasına bağlı değildir. Sayfa yenilemesi, mevcut oturumun geri yüklenmesi ve token yenilemesi yeni giriş oluşturmaz. Şifre kurtarma veya başka bir giriş yöntemi yeni oturum oluşturursa o da kaydedilir; kayıt tek başına şifre kullanıldığını iddia etmez. Başarısız giriş denemeleri için Supabase Auth günlükleri kullanılmalıdır.
@@ -12,7 +18,7 @@ Bu trigger Auth işlemiyle aynı transaction'dadır. Yerel PostgreSQL testleri i
 
 1. SQL Editor'da yalnızca `supabase/migrations/20261102_activity_history.sql` dosyasını çalıştır. Mevcut kullanıcı adı, ilerleme, arkadaşlık, beğeni ve hesap gizliliği migration'ları önceden uygulanmış olmalı. Yeni arkadaş bildirimleri migration'ı ile birlikte çalışabilir ama ona bağlı değildir.
 2. Arayüz kodunu yayımla. Ziyaret kaydı için yeni kod gerekir; SQL işlem geçmişi migration uygulandığı anda başlar. Geçmiş olaylar uydurulmaz, mevcut kayıtlar topluca geçmişe kopyalanmaz.
-3. `supabase/inspect_activity.sql` dosyasındaki KULLANICI_ADI değerini değiştirip sorgula. İlk sorgu kullanıcıya ait ve kullanıcıyı ilgilendiren son 500 işlemi, ikinci sorgu yaklaşık son aktiflikleri verir. Yalnızca kişinin kendi yaptığı işlemleri görmek için `where a.actor_id in (select id from target)` kullan.
+3. `supabase/inspect_activity.sql`: Kullanıcı adını tek yerden değiştirip dosyanın tamamını çalıştır. Tek sonuç tablosunda son 500 ilgili işlem ve yaklaşık son aktiflik görünür. Kullanıcı bulunamazsa veya geçmişi yoksa açıklama gösterilir. Tüm kullanıcıların son aktifliği için ayrı `supabase/inspect_last_activity.sql` dosyasını kullan. Arama Ad Soyad üzerinden değil kullanıcı adı üzerinden yapılır; @, büyük harf ve dış boşluklar kabul edilir.
 4. Temizliği site kullanılmadığında da günlük çalıştırmak için Supabase'de pg_cron etkinleştirip `supabase/schedule_activity_cleanup.sql` dosyasını çalıştır. Job durumunu cron.job_run_details üzerinden kontrol et. Kurulmazsa ilk yeni aktivite kaydı sırasında günde bir temizlik yapılır; site tamamen kullanılmıyorsa temizlik bir sonraki kaydı bekler. Bu yüzden günlük job önerilir.
 
 ## Kapsam ve anlam
