@@ -84,6 +84,12 @@ export default function Notifications() {
     if (failure) { setError('Bildirim okundu olarak işaretlenemedi. Tekrar dene.'); return }
     setEntries(prev => prev.map(n => n.id === entry.id ? { ...n, read_at: n.read_at || new Date().toISOString() } : n))
     if (!entry.read_at) setUnread(n => Math.max(0, n - 1))
+    if (entry.kind === 'friend') {
+      if (!entry.profile_id) { setError('Bu hesap artık mevcut değil.'); return }
+      setOpen(false)
+      navigate(`/people/${entry.profile_id}`)
+      return
+    }
     if (!entry.item_id) { setError('Bu içerik artık mevcut değil.'); return }
     setOpen(false)
     navigate(`/app?item=${entry.item_id}`, { state: { notification: entry.id, clickedAt: Date.now() } })
@@ -108,9 +114,11 @@ export default function Notifications() {
       </div>
       {loading && <p role="status">Yükleniyor…</p>}
       {error && <p role="alert">{error} <button onClick={() => setRetry(n => n + 1)}>Tekrar dene</button></p>}
-      {!loading && !error && !entries.length && <p>Henüz tepki bildirimin yok.</p>}
+      {!loading && !error && !entries.length && <p>Henüz kişisel bildirimin yok.</p>}
       <ul>{entries.map(entry => <li key={entry.id}><button className={`notification-entry ${entry.read_at ? '' : 'unread'}`} disabled={busy} onClick={() => visit(entry)}>
-        <span>Bir kişi <strong>{entry.title}</strong> {({ film: 'filmine', dizi: 'dizine', kitap: 'kitabına' })[entry.category] || 'içeriğine'} {entry.reaction === 1 ? 'beğeni' : 'beğenmeme'} bıraktı.</span>
+        {entry.kind === 'friend'
+          ? <span><strong>{entry.username ? `@${entry.username}` : 'Bir kullanıcı'}</strong> seni arkadaş ekledi.</span>
+          : <span>Bir kişi <strong>{entry.title}</strong> {({ film: 'filmine', dizi: 'dizine', kitap: 'kitabına' })[entry.category] || 'içeriğine'} {entry.reaction === 1 ? 'beğeni' : 'beğenmeme'} bıraktı.</span>}
         <time dateTime={entry.created_at}>{new Date(entry.created_at).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' })}</time>
         {!entry.read_at && <small>Okunmadı</small>}
       </button></li>)}</ul>

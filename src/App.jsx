@@ -11,6 +11,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AppFooter from './components/AppFooter'
 import PrivacyPage from './pages/PrivacyPage'
+import ActivityTracker from './components/ActivityTracker'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -36,6 +37,7 @@ function PublicOnlyRoute({ children }) {
 export default function App() {
   return (
     <div className="app-shell">
+    <ActivityTracker />
     <div className="app-content">
     <Routes>
       <Route path="/privacy" element={<PrivacyPage />} />
