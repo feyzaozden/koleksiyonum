@@ -2,8 +2,14 @@ import ItemProgress from './ItemProgress'
 import ItemReactions from './ItemReactions'
 import StarsDisplay from './StarsDisplay'
 import { fmtDate } from '../utils/format'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { useFriends } from '../context/FriendsContext'
 
-export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, onStatusChange, onEdit, onDelete, onProgress, reactions }) {
+export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, onStatusChange, onEdit, onDelete, onProgress, reactions, commentCount }) {
+  const { user } = useAuth()
+  const friends = useFriends()
+  const canComment = item.user_id === user?.id || friends.friendIds.includes(item.user_id)
   const meta = [item.creator, item.year].filter(Boolean).join(' · ')
   const sd = fmtDate(item.start_date)
   const ed = fmtDate(item.end_date)
@@ -28,6 +34,7 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
         {item.note && <div className="item-note">&quot;{item.note}&quot;</div>}
         {showOwner && <div className="item-owner-tag">{ownerName}</div>}
         {reactions && <ItemReactions item={item} counts={reactions.data[item.id]} busy={reactions.isBusy(item.id)} loadError={reactions.error} onReact={reactions.react} onRetry={reactions.refresh} />}
+        {canComment && <Link className="comment-link" to={`/items/${item.id}/comments`}>💬 Yorumlar{commentCount != null ? ` (${commentCount})` : ''}</Link>}
       </div>
       <div className="item-actions">
         {isOwner ? (

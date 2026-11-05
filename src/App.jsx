@@ -12,6 +12,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import AppFooter from './components/AppFooter'
 import PrivacyPage from './pages/PrivacyPage'
 import ActivityTracker from './components/ActivityTracker'
+import CommentsPage from './pages/CommentsPage'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -50,6 +51,8 @@ export default function App() {
       <Route path="/people/:id" element={<ProtectedRoute><PersonPage /></ProtectedRoute>} />
       <Route path="/imdb" element={<ProtectedRoute><ImdbPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/items/:id/comments" element={<ProtectedRoute><CommentsPage /></ProtectedRoute>} />
+      <Route path="/my-comments" element={<ProtectedRoute><CommentsPage mine /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/app" replace />} />
     </Routes>
     </div>

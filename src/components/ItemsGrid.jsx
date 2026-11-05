@@ -1,5 +1,6 @@
 import ItemCard from './ItemCard'
 import { useItemReactions } from '../hooks/useItemReactions'
+import { useCommentCounts } from '../hooks/useCommentCounts'
 
 const EMPTY_MESSAGES = {
   tumu: (emoji) => ({ icon: emoji, h: 'Koleksiyon boş', p: 'İlk öğeni eklemek için yukarıdaki formu kullan.' }),
@@ -11,6 +12,7 @@ const EMPTY_MESSAGES = {
 export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, onStatusChange, onEdit, onDelete, onProgress }) {
   const showSectionHeaders = sections.length > 1
   const reactions = useItemReactions(sections.flatMap((section) => section.items.map((item) => item.id)))
+  const commentCounts = useCommentCounts(sections.flatMap(section => section.items.map(item => item.id)))
 
   if (!showSectionHeaders) {
     const section = sections[0]
@@ -33,6 +35,7 @@ export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, on
             key={item.id}
             item={item}
             reactions={reactions}
+            commentCount={commentCounts[item.id]}
             isOwner={section.isOwner}
             labels={labels}
             ownerName={section.userName}
@@ -66,6 +69,7 @@ export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, on
                 key={item.id}
                 item={item}
                 reactions={reactions}
+                commentCount={commentCounts[item.id]}
                 isOwner={section.isOwner}
                 labels={labels}
                 ownerName={section.userName}

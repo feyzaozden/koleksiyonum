@@ -92,6 +92,10 @@ export default function Notifications() {
     }
     if (!entry.item_id) { setError('Bu içerik artık mevcut değil.'); return }
     setOpen(false)
+    if (entry.kind === 'comment' || entry.kind === 'reply') {
+      navigate(`/items/${entry.item_id}/comments${entry.comment_id ? `?comment=${entry.comment_id}` : ''}`)
+      return
+    }
     navigate(`/app?item=${entry.item_id}`, { state: { notification: entry.id, clickedAt: Date.now() } })
   }
 
@@ -118,6 +122,8 @@ export default function Notifications() {
       <ul>{entries.map(entry => <li key={entry.id}><button className={`notification-entry ${entry.read_at ? '' : 'unread'}`} disabled={busy} onClick={() => visit(entry)}>
         {entry.kind === 'friend'
           ? <span><strong>{entry.username ? `@${entry.username}` : 'Bir kullanıcı'}</strong> seni arkadaş ekledi.</span>
+          : entry.kind === 'comment' || entry.kind === 'reply'
+          ? <span><strong>{entry.username ? `@${entry.username}` : 'Bir kişi'}</strong> {entry.kind === 'reply' ? 'yorumuna cevap verdi' : `“${entry.title}” içeriğine yorum yaptı`}.</span>
           : <span>Bir kişi <strong>{entry.title}</strong> {({ film: 'filmine', dizi: 'dizine', kitap: 'kitabına' })[entry.category] || 'içeriğine'} {entry.reaction === 1 ? 'beğeni' : 'beğenmeme'} bıraktı.</span>}
         <time dateTime={entry.created_at}>{new Date(entry.created_at).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' })}</time>
         {!entry.read_at && <small>Okunmadı</small>}

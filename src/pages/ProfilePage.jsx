@@ -122,6 +122,9 @@ export default function ProfilePage() {
         </form>
         <ChangePasswordForm disabled={saving || signingOut || uploadingPhoto} onBusyChange={setChangingPassword} />
         <div className="auth-switch">
+          <Link to="/my-comments">Yorumlarım</Link>
+        </div>
+        <div className="auth-switch">
           <Link to="/app">← Koleksiyona dön</Link>
         </div>
         <div className="profile-signout">
