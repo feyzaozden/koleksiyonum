@@ -1,6 +1,13 @@
 // Yeni duyurulara benzersiz bir id ver; yayımlanmış duyuruların id'sini değiştirme.
 export const ANNOUNCEMENTS = [
   {
+    id: '2026-11-05-comments',
+    date: '2026-11-05',
+    icon: '💬',
+    title: 'Artık yorumlarla da paylaşabilirsin!',
+    text: 'Arkadaşlarının kitaplarına, filmlerine ve dizilerine yorum yapabilir, yorumlara cevap verebilir ve beğeni ya da beğenmeme bırakabilirsin. İstersen yorumunu anonim paylaşabilirsin. Anonim yorumlarda adın, yorum tepkilerinde ise kimliğin diğer üyelere gösterilmez. İçerik kartındaki Yorumlar bölümünden sohbete katıl!',
+  },
+  {
     id: '2026-10-18-profile-privacy',
     date: '2026-10-18',
     icon: '🔓',
