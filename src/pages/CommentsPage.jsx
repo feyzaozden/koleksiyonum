@@ -6,6 +6,8 @@ import AppHeader from '../components/AppHeader'
 import ProfileAvatar from '../components/ProfileAvatar'
 import CommentForm from '../components/CommentForm'
 import CommentDelete from '../components/CommentDelete'
+import { orderCommentThreads } from '../utils/commentThreads'
+import { refreshCommentPages } from '../utils/refreshCommentPages'
 
 export default function CommentsPage({ mine = false }) {
   const { id } = useParams()
@@ -30,16 +32,20 @@ function CommentsContent({ mine, id, focus }) {
   const alive = useRef(true)
   const actionLock = useRef(false)
   const entryRef = useRef([])
+  const nextCursor = useRef(0)
   const valid = mine || /^[1-9]\d{0,15}$/.test(id || '')
 
-  const load = useCallback(async ({ append = false, focused = focus } = {}) => {
+  const load = useCallback(async ({ append = false, focused = focus, preserve = false } = {}) => {
     const request = ++generation.current
     setLoading(true); setError('')
     if (!valid) { setLoading(false); setError('Geçersiz içerik.'); return }
     const last = entryRef.current.at(-1)?.id
     const result = mine
       ? await supabase.rpc('get_my_comments', { before_id: append ? last : null })
-      : await supabase.rpc('get_item_comments', { target_item_id: id, after_id: append ? last : 0, focus_id: !append && /^[1-9]\d{0,15}$/.test(focused || '') ? focused : null })
+      : preserve
+      ? await refreshCommentPages(cursor => supabase.rpc('get_item_comments', { target_item_id: id, after_id: cursor, focus_id: null }), nextCursor.current, focused)
+        .catch(error => ({ error }))
+      : await supabase.rpc('get_item_comments', { target_item_id: id, after_id: append ? nextCursor.current : 0, focus_id: !append && /^[1-9]\d{0,15}$/.test(focused || '') ? focused : null })
     if (!alive.current || request !== generation.current) return
     setLoading(false)
     if (result.error) {
@@ -47,8 +53,9 @@ function CommentsContent({ mine, id, focus }) {
       setError(result.error.message || 'Yorumlar yüklenemedi.'); return
     }
     const rows = mine ? result.data : result.data.entries
+    if (!mine) nextCursor.current = result.data.next_after ?? rows.at(-1)?.id ?? 0
     const next = append ? [...entryRef.current, ...rows] : rows
-    entryRef.current = next; setEntries(next); setAllowed(true)
+    entryRef.current = next; setEntries(mine ? next : orderCommentThreads(next)); setAllowed(true)
     setMore(mine ? rows.length === 50 : result.data.has_more)
     if (!mine) setTitle(result.data.title)
     if (!append && focused) requestAnimationFrame(() => {
@@ -61,7 +68,7 @@ function CommentsContent({ mine, id, focus }) {
   useEffect(() => {
     alive.current = true
     load()
-    const refresh = () => { if (!actionLock.current) load() }
+    const refresh = () => { if (!actionLock.current) load({ preserve: true, focused: null }) }
     window.addEventListener('focus', refresh)
     return () => { alive.current = false; generation.current++; window.removeEventListener('focus', refresh) }
   }, [load])
@@ -69,7 +76,7 @@ function CommentsContent({ mine, id, focus }) {
   async function send(content, anonymous, parent) {
     const { data, error: failure } = await supabase.rpc('add_item_comment', { target_item_id: id, content, as_anonymous: anonymous, reply_to: parent })
     if (failure) throw failure
-    if (alive.current) { setReply(null); await load({ focused: String(data) }) }
+    if (alive.current) { setReply(null); await load({ focused: String(data), preserve: true }) }
   }
   async function react(entry, value) {
     if (actionLock.current) return
@@ -77,7 +84,7 @@ function CommentsContent({ mine, id, focus }) {
     try {
       const { error: failure } = await supabase.rpc('set_comment_reaction', { target_comment_id: entry.id, reaction_value: entry.my_reaction === value ? null : value })
       if (failure) throw failure
-      await load({ focused: String(entry.id) })
+      await load({ focused: String(entry.id), preserve: true })
     } catch (err) { if (alive.current) setError(err.message) }
     finally { actionLock.current = false; if (alive.current) setBusy(false) }
   }
@@ -85,7 +92,7 @@ function CommentsContent({ mine, id, focus }) {
     const { error: failure } = await supabase.rpc('delete_item_comment', { target_comment_id: deleting.id })
     if (failure) throw failure
     if (reply?.id === deleting.id) setReply(null)
-    await load({ focused: mine ? null : String(deleting.id) })
+    await load({ focused: null, preserve: true })
   }
 
   return <><AppHeader /><main className="social-main comments-page">

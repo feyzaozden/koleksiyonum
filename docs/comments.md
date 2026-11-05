@@ -22,6 +22,8 @@ Yorum ve cevaplarda uygulamaya özel kelime/karakter sınırı yoktur. Boş yoru
 
 ## Silme ve eski yorumlar
 
+Yanıtlar ana yorumun hemen altında tarih sırasıyla gösterilir. `20261105_comments_thread_order.sql` migration'ı sayfalamayı 50 ana yorum grubuna göre yapar; bir grubun yanıtları aynı sayfada döner. `next_after` sonraki ana yorum grubunun imlecidir. Bildirimden bir yanıta gidildiğinde ana yorum da getirilir. Önceki hide_deleted migration'ını bu yeni migration'dan sonra tekrar çalıştırma; aynı okuma fonksiyonunun eski sürümünü geri yükler.
+
 Güncel görünümde silinen yorumlar listelenmez; yer tutucu veya silinmiş yorum alıntısı gösterilmez. Önceki kurulumu güncellemek için `20261105_comments_hide_deleted.sql` uygulanır. Sayfalama yalnızca görünür yorumları sayar; alt cevapların bağlantısını korumak için metni temizlenmiş kayıt veritabanında tutulur.
 
 `delete_item_comment` yorumu yazan kişiye veya içerik sahibine izin verir. Yazarın arkadaşlığı bitmiş olsa da kendi yorumunu silmesine izin verilir. Metin NULL yapılır, silinme zamanı yazılır ve oylar kaldırılır. Alt cevaplar korunur; silinen yazar bilgisi genel yanıtta gizlenir. `get_my_comments` yalnızca oturum sahibinin silinmemiş yorumlarını döndürür; bu nedenle arkadaşlık bitse de Yorumlarım'dan silme mümkündür. İçeriğin kendisi silinirse bağlı yorumlar ve oylar FK cascade ile silinir.
