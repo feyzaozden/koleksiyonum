@@ -3,6 +3,19 @@ import assert from 'node:assert/strict'
 import { createVerifiedItemHandler } from '../server/createItem.js'
 
 const env = {VITE_SUPABASE_URL:'https://test.supabase.co',VITE_SUPABASE_ANON_KEY:'public',TMDB_READ_ACCESS_TOKEN:'tmdb-secret',SUPABASE_SERVICE_ROLE_KEY:'service-secret'}
+test('poster linking trusts session and catalog, never caller metadata', async () => {
+  let saved
+  const handler = createVerifiedItemHandler({ env, fetchImpl: async (url, options) => {
+    if (String(url).includes('/auth/v1/user')) return Response.json({ id: 'owner' })
+    if (String(url).includes('api.themoviedb.org')) return Response.json({ id: 42, title: 'Film', poster_path: '/real.jpg' })
+    assert.ok(String(url).endsWith('/rpc/link_item_poster'))
+    saved = JSON.parse(options.body)
+    return Response.json({ id: 7, poster_path: '/real.jpg' })
+  } })
+  const result = await call(handler, { item_id: 7, source_id: 42, category: 'film', owner_id: 'stranger', poster_path: '/fake.jpg', note: 'overwrite' })
+  assert.equal(result.statusCode, 200)
+  assert.deepEqual(saved, { target_item: 7, owner_id: 'owner', media_category: 'film', tmdb_id: 42, image_path: '/real.jpg' })
+})
 async function call(handler,body,authorization='Bearer user-token') {
   const res={statusCode:0,setHeader(){},end(text){this.body=JSON.parse(text)}}
   await handler({method:'POST',headers:{authorization},body},res)

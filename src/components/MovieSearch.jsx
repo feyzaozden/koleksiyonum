@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { getMovies } from '../lib/movieApi'
 
-export default function MovieSearch({ category = 'film', onSelect, onPendingChange, onManual, disabled }) {
+export default function MovieSearch({ category = 'film', onSelect, onPendingChange, onManual, disabled, initialQuery = '', posterMode = false }) {
   const isSeries = category === 'dizi'
+  const queryId = useId()
   const label = isSeries ? 'Dizi' : 'Film'
   const plural = isSeries ? 'Diziler' : 'Filmler'
   const [manual, setManual] = useState(false)
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(initialQuery.slice(0, 100))
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
@@ -18,8 +19,8 @@ export default function MovieSearch({ category = 'film', onSelect, onPendingChan
   const searchInput = useRef(null)
 
   useEffect(() => {
-    onPendingChange(selecting)
-    return () => onPendingChange(false)
+    onPendingChange?.(selecting)
+    return () => onPendingChange?.(false)
   }, [selecting, onPendingChange])
   useEffect(() => () => selection.current?.abort(), [])
 
@@ -55,7 +56,7 @@ export default function MovieSearch({ category = 'film', onSelect, onPendingChan
       const item = isSeries ? data.series : data.movie
       onSelect(item)
       setQuery('')
-      setSelected(`${item.title}${item.year ? ` (${item.year})` : ''} forma aktarıldı.`)
+      setSelected(posterMode ? '' : `${item.title}${item.year ? ` (${item.year})` : ''} forma aktarıldı.`)
       searchInput.current?.focus({ preventScroll: true })
     } catch (e) {
       if (!controller.signal.aborted) setError(e.message || `${label} bilgileri alınamadı.`)
@@ -66,13 +67,13 @@ export default function MovieSearch({ category = 'film', onSelect, onPendingChan
 
   return <section className="movie-search" aria-label={`${label} arama`} onKeyDown={(e) => e.stopPropagation()}>
     <div className="movie-search-heading">
-      <label htmlFor="movie-query">{manual ? (isSeries ? 'Dizini elle ekle' : 'Filmini elle ekle') : `${label} ara`}</label>
-      <button type="button" className="movie-search-switch" disabled={disabled || selecting} onClick={() => {
+      <label htmlFor={queryId}>{manual ? (isSeries ? 'Dizini elle ekle' : 'Filmini elle ekle') : `${label} ara`}</label>
+      {!posterMode && <button type="button" className="movie-search-switch" disabled={disabled || selecting} onClick={() => {
         setManual(!manual); setQuery(''); setSelected(''); onManual?.()
-      }}>{manual ? `${label} aramaya dön` : 'Kendim eklemek istiyorum'}</button>
+      }}>{manual ? `${label} aramaya dön` : 'Kendim eklemek istiyorum'}</button>}
     </div>
     {!manual && <>
-      <input ref={searchInput} id="movie-query" type="search" placeholder={isSeries ? 'Dizi adı yaz… Örn. Leyla ile Mecnun' : 'Film adı yaz… Örn. Yıldızlararası'} maxLength={100}
+      <input ref={searchInput} id={queryId} type="search" placeholder={isSeries ? 'Dizi adı yaz… Örn. Leyla ile Mecnun' : 'Film adı yaz… Örn. Yıldızlararası'} maxLength={100}
         autoComplete="off" value={query} disabled={disabled || selecting} onChange={(e) => { setQuery(e.target.value); setSelected('') }} />
       <div role="status" aria-live="polite">
         {selecting ? `${label} bilgileri alınıyor…` : loading ? `${plural} aranıyor…` : selected}

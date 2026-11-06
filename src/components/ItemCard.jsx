@@ -1,5 +1,7 @@
 import ItemProgress from './ItemProgress'
 import ItemCover from './ItemCover'
+import { useState } from 'react'
+import PosterPicker from './PosterPicker'
 import ItemReactions from './ItemReactions'
 import StarsDisplay from './StarsDisplay'
 import { fmtDate } from '../utils/format'
@@ -8,6 +10,9 @@ import { useAuth } from '../context/AuthContext'
 import { useFriends } from '../context/FriendsContext'
 
 export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, onStatusChange, onEdit, onDelete, onProgress, reactions, commentCount }) {
+  const [picker, setPicker] = useState(false)
+  const [linked, setLinked] = useState(null)
+  const displayedItem = linked?.id === item.id ? { ...item, poster_path: linked.poster_path, source: linked.source, source_id: linked.source_id } : item
   const { user } = useAuth()
   const friends = useFriends()
   const canComment = item.user_id === user?.id || friends.friendIds.includes(item.user_id)
@@ -20,7 +25,8 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
 
   return (
     <div className="item-card" id={`item-${item.id}`} tabIndex={-1}>
-      <ItemCover item={item} />
+      <ItemCover item={displayedItem} />
+      {picker && <PosterPicker item={displayedItem} onClose={() => setPicker(false)} onSaved={saved => { setLinked(saved); setPicker(false) }} />}
       <div className="item-body">
         <div className="item-title">{item.title}</div>
         {meta && <div className="item-meta">{meta}</div>}
@@ -38,6 +44,7 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
         {canComment && <Link className="comment-link" to={`/items/${item.id}/comments`}>💬 Yorumlar{commentCount != null ? ` (${commentCount})` : ''}</Link>}
       </div>
       <div className="item-actions">
+        {isOwner && ['film','dizi'].includes(item.category) && !displayedItem.poster_path && !displayedItem.source_id && <button className="poster-pick-button" onClick={() => setPicker(true)}>Afiş seç</button>}
         {isOwner ? (
           <select
             className="status-select"

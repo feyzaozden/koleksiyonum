@@ -37,6 +37,7 @@ export function createVerifiedItemHandler({ env = process.env, fetchImpl = fetch
     }
     try {
       const base = env.VITE_SUPABASE_URL.replace(/\/$/, '')
+      if (input.item_id != null && !/^[1-9]\d{0,18}$/.test(String(input.item_id))) return reply(400, { error: 'Geçersiz içerik.' })
       const authResponse = await fetchImpl(`${base}/auth/v1/user`, { headers: { apikey: env.VITE_SUPABASE_ANON_KEY, Authorization: authorization }, signal: AbortSignal.timeout(8000) })
       if (!authResponse.ok) return reply(authResponse.status >= 500 ? 503 : 401, { error: 'Oturum doğrulanamadı. Tekrar giriş yap.' })
       const user = await authResponse.json()
@@ -47,6 +48,16 @@ export function createVerifiedItemHandler({ env = process.env, fetchImpl = fetch
       if (response.statusCode !== 200) return reply(response.statusCode, result)
       const item = input.category === 'film' ? result.movie : result.series
       if (!item || item.id !== input.source_id || !item.title) return reply(502, { error: 'Kaynak bilgisi doğrulanamadı.' })
+      if (input.item_id != null) {
+        if (!item.poster_path) return reply(400, { error: 'Bu yapımın afişi bulunmuyor. Başka bir sonuç seçebilirsin.' })
+        const linked = await fetchImpl(`${base}/rest/v1/rpc/link_item_poster`, {
+          method: 'POST', headers: { apikey: serverKey, ...(!serverKey.startsWith('sb_secret_') ? { Authorization: `Bearer ${serverKey}` } : {}), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target_item: input.item_id, owner_id: user.id, media_category: input.category, tmdb_id: item.id, image_path: item.poster_path }), signal: AbortSignal.timeout(12000),
+        })
+        const data = await linked.json()
+        if (!linked.ok) return reply(400, { error: data.code === '23505' ? 'Bu yapım zaten koleksiyonunda. Kayıtlar birleştirilmedi.' : data.code === 'P0001' ? data.message : 'Afiş kaydedilemedi. Afiş eşleştirme SQL kurulumunu kontrol et.' })
+        return reply(200, { item: data })
+      }
       // Never accept user_id, source, title, creator, year or added_at from the caller.
       const payload = {
         user_id: user.id, category: input.category, source: 'tmdb', source_id: item.id,
