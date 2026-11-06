@@ -27,6 +27,7 @@ test('verified creation binds ownership to session and metadata to TMDB, not cal
   assert.equal(saved.source,'tmdb')
   assert.equal(saved.note,'My note')
   assert.equal(saved.rating,8)
+  assert.equal(saved.poster_path,null)
   assert.ok(!JSON.stringify(result.body).includes('service-secret'))
 })
 test('verified endpoint rejects missing auth, bad IDs, absent credentials and missing catalog entries',async()=>{

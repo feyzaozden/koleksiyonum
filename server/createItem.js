@@ -51,6 +51,7 @@ export function createVerifiedItemHandler({ env = process.env, fetchImpl = fetch
       const payload = {
         user_id: user.id, category: input.category, source: 'tmdb', source_id: item.id,
         title: item.title, creator: item.creator || null, year: item.year || null,
+        poster_path: item.poster_path || null,
         status: input.status ?? 'bekliyor', note: input.note ?? null,
         start_date: input.start_date ?? null, end_date: input.end_date ?? null,
         rating: input.rating ?? null, emoji: input.category === 'film' ? '🎬' : '📺',

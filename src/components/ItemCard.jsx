@@ -1,4 +1,5 @@
 import ItemProgress from './ItemProgress'
+import ItemCover from './ItemCover'
 import ItemReactions from './ItemReactions'
 import StarsDisplay from './StarsDisplay'
 import { fmtDate } from '../utils/format'
@@ -19,7 +20,7 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
 
   return (
     <div className="item-card" id={`item-${item.id}`} tabIndex={-1}>
-      <div className="item-emoji">{item.emoji}</div>
+      <ItemCover item={item} />
       <div className="item-body">
         <div className="item-title">{item.title}</div>
         {meta && <div className="item-meta">{meta}</div>}

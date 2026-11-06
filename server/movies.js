@@ -71,6 +71,7 @@ function createMediaHandler(type, { env = process.env, fetchImpl = fetch, now = 
         title: (isSeries ? movie.name || movie.original_name : movie.title || movie.original_title) || '',
         originalTitle: (isSeries ? movie.original_name : movie.original_title) || '',
         year: releaseDate(movie)?.slice(0, 4) || '',
+        poster_path: /^\/[a-zA-Z0-9_-]+\.(jpg|png|webp)$/.test(movie.poster_path || '') ? movie.poster_path : null,
         poster: /^\/[a-zA-Z0-9_-]+\.(jpg|png|webp)$/.test(movie.poster_path || '')
           ? `https://image.tmdb.org/t/p/w185${movie.poster_path}` : null,
       })
