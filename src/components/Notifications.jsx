@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
-import { ANNOUNCEMENTS, announcementReads } from '../constants/announcements'
+import { useAnnouncements } from '../hooks/useAnnouncements'
 
 export default function Notifications() {
   const { user } = useAuth()
@@ -18,30 +18,16 @@ export default function Notifications() {
   const [busy, setBusy] = useState(false)
   const [more, setMore] = useState(false)
   const [retry, setRetry] = useState(0)
-  const [announcementBusy, setAnnouncementBusy] = useState(false)
-  const [announcementError, setAnnouncementError] = useState('')
-  const readAnnouncements = announcementReads(user)
-  const totalUnread = unread + ANNOUNCEMENTS.filter(entry => !readAnnouncements.includes(entry.id)).length
-
-  async function readAnnouncement(id) {
-    if (announcementBusy || !user) return
-    setAnnouncementBusy(true)
-    setAnnouncementError('')
-    try {
-      const { error: failure } = await supabase.auth.updateUser({
-        data: { announcement_reads: [...new Set([...readAnnouncements, id])] },
-      })
-      if (failure) throw failure
-    } catch {
-      setAnnouncementError('Okundu bilgisi kaydedilemedi. Tekrar dene.')
-    } finally { setAnnouncementBusy(false) }
-  }
+  const [tab, setTab] = useState('notifications')
+  const announcements = useAnnouncements()
+  const totalUnread = unread + announcements.unread
+  const actionLock = useRef(false)
 
   useEffect(() => {
     let active = true
     setEntries([]); setUnread(0); setLoading(true)
     async function refresh() {
-      if (!user || document.hidden) return
+      if (!user || document.hidden || actionLock.current) return
       const request = ++version.current
       const { data, error: failure } = await supabase.rpc('get_reaction_notifications')
       if (!active || request !== version.current) return
@@ -75,15 +61,28 @@ export default function Notifications() {
     setEntries(prev => [...prev, ...data.entries]); setMore(data.entries.length === 30)
   }
 
-  async function visit(entry) {
+  async function markRead(entry) {
+    if (actionLock.current) return false
+    if (entry.read_at) return true
+    actionLock.current = true
     setBusy(true)
     const request = ++version.current
+    try {
     const { error: failure } = await supabase.rpc('read_reaction_notification', { notification_id: entry.id })
-    setBusy(false)
-    if (request !== version.current) return
-    if (failure) { setError('Bildirim okundu olarak işaretlenemedi. Tekrar dene.'); return }
+    if (request !== version.current) return false
+    if (failure) { setError('Bildirim okundu olarak işaretlenemedi. Tekrar dene.'); return false }
+    setError('')
     setEntries(prev => prev.map(n => n.id === entry.id ? { ...n, read_at: n.read_at || new Date().toISOString() } : n))
     if (!entry.read_at) setUnread(n => Math.max(0, n - 1))
+    return true
+    } catch {
+      if (request === version.current) setError('Bildirim okundu olarak işaretlenemedi. Tekrar dene.')
+      return false
+    } finally { setBusy(false); actionLock.current = false }
+  }
+
+  async function visit(entry) {
+    if (!await markRead(entry)) return
     if (entry.kind === 'friend') {
       if (!entry.profile_id) { setError('Bu hesap artık mevcut değil.'); return }
       setOpen(false)
@@ -100,26 +99,34 @@ export default function Notifications() {
   }
 
   return <div className="notifications" ref={root}>
-    <button ref={bell} type="button" className="btn-imdb-link" aria-expanded={open} aria-controls="notifications-panel" onClick={() => setOpen(v => !v)}>
+    <button ref={bell} type="button" className="btn-imdb-link" aria-expanded={open} aria-controls="notifications-panel" onClick={() => { if (!open) { setTab('notifications'); announcements.refresh() } setOpen(v => !v) }}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg>
       Bildirimlerim {totalUnread > 0 && <span className="nav-badge" aria-label={`${totalUnread} okunmamış bildirim`}>{totalUnread > 99 ? '99+' : totalUnread}</span>}
     </button>
     {open && <section id="notifications-panel" className="notifications-panel" aria-label="Bildirimlerim">
       <strong>Bildirimlerim</strong>
-      <div className="announcement-list" aria-label="Koleksiyonum’dan yenilikler">
-        {ANNOUNCEMENTS.map(entry => <article className="announcement-card" key={entry.id}>
-          <div className="announcement-heading"><small>Koleksiyonum’dan yenilikler</small>{!readAnnouncements.includes(entry.id) && <span className="nav-badge">Yeni</span>}</div>
+      <div className="notification-tabs" role="group" aria-label="Bildirim türü">
+        <button type="button" aria-pressed={tab === 'notifications'} onClick={() => setTab('notifications')}>Bildirimler{unread > 0 ? ` · ${unread}` : ''}</button>
+        <button type="button" aria-pressed={tab === 'news'} onClick={() => setTab('news')}>Yenilikler{announcements.unread > 0 ? ` · ${announcements.unread}` : ''}</button>
+      </div>
+      {tab === 'news' && <div className="announcement-list" aria-label="Koleksiyonum’dan yenilikler">
+        {announcements.loading && <p role="status">Yükleniyor…</p>}
+        {!announcements.loading && !announcements.error && !announcements.entries.length && <p>Henüz duyuru yok.</p>}
+        {announcements.entries.map(entry => <article className="announcement-card" key={entry.id}>
+          <div className="announcement-heading"><small>Koleksiyonum’dan yenilikler</small>{!entry.read_at && <span className="nav-badge">Yeni</span>}</div>
           <h3>{entry.icon || '🔔'} {entry.title}</h3>
           <p>{entry.text}</p>
-          <time dateTime={entry.date}>{new Date(`${entry.date}T12:00:00`).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</time>
-          {!readAnnouncements.includes(entry.id) && <button type="button" disabled={announcementBusy} onClick={() => readAnnouncement(entry.id)}>{announcementBusy ? 'Kaydediliyor…' : 'Okudum'}</button>}
+          <time dateTime={entry.published_at}>{new Date(entry.published_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</time>
+          {!entry.read_at && <button type="button" disabled={announcements.busy} onClick={() => announcements.markRead(entry)}>Okudum</button>}
         </article>)}
-        {announcementError && <p role="alert">{announcementError}</p>}
-      </div>
+        {announcements.error && <p role="alert">{announcements.error} <button onClick={() => announcements.refresh()}>Tekrar dene</button></p>}
+        {announcements.more && <button onClick={() => announcements.refresh(true)}>Daha eski duyurular</button>}
+      </div>}
+      {tab === 'notifications' && <>
       {loading && <p role="status">Yükleniyor…</p>}
       {error && <p role="alert">{error} <button onClick={() => setRetry(n => n + 1)}>Tekrar dene</button></p>}
       {!loading && !error && !entries.length && <p>Henüz kişisel bildirimin yok.</p>}
-      <ul>{entries.map(entry => <li key={entry.id}><button className={`notification-entry ${entry.read_at ? '' : 'unread'}`} disabled={busy} onClick={() => visit(entry)}>
+      <ul>{entries.map(entry => <li className={`notification-row ${entry.read_at ? '' : 'unread'}`} key={entry.id}><button className="notification-entry" disabled={busy} onClick={() => visit(entry)}>
         {entry.kind === 'friend'
           ? <span><strong>{entry.username ? `@${entry.username}` : 'Bir kullanıcı'}</strong> seni arkadaş ekledi.</span>
           : entry.kind === 'comment' || entry.kind === 'reply'
@@ -127,8 +134,9 @@ export default function Notifications() {
           : <span>Bir kişi <strong>{entry.title}</strong> {({ film: 'filmine', dizi: 'dizine', kitap: 'kitabına' })[entry.category] || 'içeriğine'} {entry.reaction === 1 ? 'beğeni' : 'beğenmeme'} bıraktı.</span>}
         <time dateTime={entry.created_at}>{new Date(entry.created_at).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' })}</time>
         {!entry.read_at && <small>Okunmadı</small>}
-      </button></li>)}</ul>
+      </button><label className="notification-read"><input type="checkbox" checked={Boolean(entry.read_at)} disabled={busy || Boolean(entry.read_at)} onChange={() => markRead(entry)} /> Okundu</label></li>)}</ul>
       {more && <button disabled={busy} onClick={older}>Daha eski bildirimler</button>}
+      </>}
     </section>}
   </div>
 }

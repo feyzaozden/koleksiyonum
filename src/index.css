@@ -505,6 +505,19 @@ body { background:radial-gradient(ellipse at 0 0, #dedfd8 0, transparent 55%), r
 .progress-field > input { width:100%; min-width:0; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); font:inherit; }
 
 /* Reaction notifications */
+.notification-tabs { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:stretch; gap:8px; width:100%; margin:14px 0 0; }
+.notifications-panel .notification-tabs > button { display:flex; align-items:center; justify-content:center; width:100%; min-width:0; min-height:46px; margin:0; padding:12px 8px; border:1px solid var(--border); border-radius:9px; color:var(--text); background:var(--surface); font:inherit; font-size:.82rem; font-weight:600; line-height:1.4; text-align:center; overflow-wrap:anywhere; cursor:pointer; }
+.notifications-panel .notification-tabs > button[aria-pressed="true"] { background:var(--text); color:var(--surface); }
+.notification-row { margin-top:10px; border:1px solid var(--border); border-radius:10px; }
+.notification-row.unread { background:var(--kitap-pale); border-left:3px solid var(--kitap); }
+.app-header-right .notification-row .notification-entry { border:0; margin:0; background:transparent; }
+.notification-read { display:flex; align-items:center; justify-content:flex-end; gap:6px; padding:0 12px 10px; font-size:.75rem; color:var(--text-muted); cursor:pointer; }
+.notification-read input { accent-color:var(--kitap); }
+.comments-embedded { margin-top:12px; width:100%; }
+.admin-announcements h3 { font-size:1rem; margin:12px 0; }
+.admin-announcements > button, .announcement-delete-confirm button { padding:9px 12px; border:1px solid var(--border); border-radius:8px; background:var(--surface2); color:var(--text); cursor:pointer; }
+.admin-announcements .auth-form { margin-top:14px; }
+.announcement-card p { white-space:pre-wrap; overflow-wrap:anywhere; }
 .comment-link { display:inline-flex; margin-top:12px; padding:7px 10px; border:1px solid var(--border); border-radius:9px; color:var(--text); text-decoration:none; font-size:.8rem; }
 .comments-page { max-width:820px; }
 .comments-page h1 { margin:18px 0; overflow-wrap:anywhere; }

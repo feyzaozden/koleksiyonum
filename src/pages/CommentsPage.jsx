@@ -9,16 +9,16 @@ import CommentDelete from '../components/CommentDelete'
 import { orderCommentThreads } from '../utils/commentThreads'
 import { refreshCommentPages } from '../utils/refreshCommentPages'
 
-export default function CommentsPage({ mine = false }) {
+export default function CommentsPage({ mine = false, embedded = false }) {
   const { id } = useParams()
   const { user } = useAuth()
   const location = useLocation()
   const focus = new URLSearchParams(location.search).get('comment')
   // A new target/account gets a fresh state and cannot display the previous thread.
-  return <CommentsContent key={`${user.id}:${mine}:${id}:${focus}`} mine={mine} id={id} focus={focus} />
+  return <CommentsContent key={`${user.id}:${mine}:${id}:${focus}`} mine={mine} embedded={embedded} id={id} focus={focus} />
 }
 
-function CommentsContent({ mine, id, focus }) {
+function CommentsContent({ mine, embedded, id, focus }) {
   const [entries, setEntries] = useState([])
   const [title, setTitle] = useState('')
   const [loading, setLoading] = useState(true)
@@ -95,9 +95,10 @@ function CommentsContent({ mine, id, focus }) {
     await load({ focused: null, preserve: true })
   }
 
-  return <><AppHeader /><main className="social-main comments-page">
-    {mine && <Link to="/profile">← Profilim</Link>}
-    <h1>{mine ? 'Yorumlarım' : title ? `${title} · Yorumlar` : 'Yorumlar'}</h1>
+  const Container = embedded ? 'div' : 'main'
+  return <>{!embedded && <AppHeader />}<Container className={embedded ? 'comments-page comments-embedded' : 'social-main comments-page'}>
+    {mine && !embedded && <Link to="/profile">← Profilim</Link>}
+    {!embedded && <h1>{mine ? 'Yorumlarım' : title ? `${title} · Yorumlar` : 'Yorumlar'}</h1>}
     {mine && <p>Arkadaşlığın sona erse de burada kendi yorumlarını silebilirsin.</p>}
     {error && <p className="auth-error" role="alert">{error} <button onClick={() => load()}>Tekrar dene</button></p>}
     {loading && <p role="status">Yükleniyor…</p>}
@@ -123,5 +124,5 @@ function CommentsContent({ mine, id, focus }) {
     </article>)}</div>
     {more && <button disabled={loading || busy} onClick={() => load({ append: true })}>Daha fazla yorum</button>}
     {deleting && <CommentDelete onClose={() => setDeleting(null)} onDelete={remove} />}
-  </main></>
+  </Container></>
 }

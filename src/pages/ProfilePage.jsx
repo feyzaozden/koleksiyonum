@@ -5,6 +5,8 @@ import AppHeader from '../components/AppHeader'
 import ProfilePhotoEditor from '../components/ProfilePhotoEditor'
 import UsernameField from '../components/UsernameField'
 import ChangePasswordForm from '../components/ChangePasswordForm'
+import MyCommentsPanel from '../components/MyCommentsPanel'
+import AdminAnnouncements from '../components/AdminAnnouncements'
 import { AVATAR_CHOICES } from '../constants/tabs'
 
 export default function ProfilePage() {
@@ -121,9 +123,8 @@ export default function ProfilePage() {
           </button>
         </form>
         <ChangePasswordForm disabled={saving || signingOut || uploadingPhoto} onBusyChange={setChangingPassword} />
-        <div className="auth-switch">
-          <Link to="/my-comments">Yorumlarım</Link>
-        </div>
+        <MyCommentsPanel />
+        <AdminAnnouncements />
         <div className="auth-switch">
           <Link to="/app">← Koleksiyona dön</Link>
         </div>
