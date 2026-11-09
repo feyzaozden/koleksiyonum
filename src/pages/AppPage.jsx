@@ -153,7 +153,7 @@ export default function AppPage() {
       </div>
 
       <div className="main">
-        <StatsBar items={statsItems} labels={tab.statusLabels} />
+        <StatsBar items={statsItems} collectionItems={items} labels={tab.statusLabels} loading={loading} error={Boolean(loadError)} />
 
         {showGettingStarted && <section className="getting-started" aria-labelledby="getting-started-title">
           <div className="getting-started-heading">
