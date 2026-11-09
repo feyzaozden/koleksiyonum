@@ -7,18 +7,20 @@ const STATUS_FILTERS = [
 
 export default function FilterBar({ search, onSearchChange, statusFilter, onStatusFilterChange, sort, onSortChange }) {
   return (
-    <div className="filter-bar">
-      <input type="text" placeholder="Ara..." value={search} onChange={(e) => onSearchChange(e.target.value)} />
+    <div className="filter-bar" role="group" aria-label="Koleksiyon arama ve filtreleri">
+      <input type="search" aria-label="Başlık, yazar veya nota göre ara" placeholder="Başlık, yazar veya not ara..." value={search} onChange={(e) => onSearchChange(e.target.value)} />
       {STATUS_FILTERS.map((f) => (
         <button
           key={f.value}
+          type="button"
           className={'filter-btn' + (statusFilter === f.value ? ' active' : '')}
+          aria-pressed={statusFilter === f.value}
           onClick={() => onStatusFilterChange(f.value)}
         >
           {f.label}
         </button>
       ))}
-      <select className="sort-select" value={sort} onChange={(e) => onSortChange(e.target.value)}>
+      <select className="sort-select" aria-label="Sıralama ölçütü" value={sort} onChange={(e) => onSortChange(e.target.value)}>
         <option value="newest">En Yeni</option>
         <option value="oldest">En Eski</option>
         <option value="az">A → Z</option>

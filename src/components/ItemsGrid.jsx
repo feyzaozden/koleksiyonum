@@ -9,19 +9,19 @@ const EMPTY_MESSAGES = {
   bitti: () => ({ icon: '✅', h: 'Tamamlanan yok', p: 'Henüz tamamladığın bir şey yok.' }),
 }
 
-export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, search = '', onSearchChange, onStatusChange, onEdit, onDelete, onProgress }) {
+export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, search = '', onClearFilters, onStatusChange, onEdit, onDelete, onProgress }) {
   const showSectionHeaders = sections.length > 1
   const reactions = useItemReactions(sections.flatMap((section) => section.items.map((item) => item.id)))
   const commentCounts = useCommentCounts(sections.flatMap(section => section.items.map(item => item.id)))
 
-  if (search.trim() && sections.every((section) => section.items.length === 0)) {
+  if ((search.trim() || activeFilter !== 'tumu') && sections.every((section) => section.items.length === 0)) {
     return (
       <div className="items-grid">
         <div className="empty">
           <div className="empty-icon">🔎</div>
-          <h3>Aramanla eşleşen içerik bulunamadı</h3>
-          <p>Farklı bir başlık, yazar veya notla aramayı dene.</p>
-          <button className="btn-cancel" type="button" onClick={() => onSearchChange('')}>Aramayı temizle</button>
+          <h3>{search.trim() ? 'Aramanla eşleşen içerik bulunamadı' : 'Bu filtreyle eşleşen içerik bulunamadı'}</h3>
+          <p>Arama veya durum filtresini temizleyip tekrar deneyebilirsin.</p>
+          <button className="btn-cancel empty-clear-filters" type="button" onClick={onClearFilters}>Filtreleri temizle</button>
         </div>
       </div>
     )

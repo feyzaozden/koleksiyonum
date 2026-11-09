@@ -155,7 +155,7 @@ export default function AppPage() {
           tabEmoji={tab.emoji}
           activeFilter={statusFilter}
           search={search}
-          onSearchChange={setSearch}
+          onClearFilters={() => { setSearch(''); setStatusFilter('tumu') }}
           labels={tab.statusLabels}
           onStatusChange={handleStatusChange}
           onProgress={updateItem}
