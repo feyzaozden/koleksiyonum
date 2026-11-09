@@ -85,12 +85,5 @@ export function useItems(scope = 'circle', ownerId = null) {
     setItems((prev) => prev.filter((i) => i.id !== id))
   }
 
-  async function importItems(entries) {
-    const { data, error } = await supabase.rpc('import_collection_items', { entries })
-    if (error) throw new Error('Liste eklenemedi. Bağlantını ve toplu ekleme kurulumunu kontrol et.')
-    await refresh()
-    return data || []
-  }
-
-  return { items: items.filter((item) => selectedIds.includes(item.user_id)), loading, error, refresh, addItem, updateItem, deleteItem, importItems }
+  return { items: items.filter((item) => selectedIds.includes(item.user_id)), loading, error, refresh, addItem, updateItem, deleteItem }
 }

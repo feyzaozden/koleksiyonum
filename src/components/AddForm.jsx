@@ -62,13 +62,13 @@ export default function AddForm({ category, creatorLabel, disabled, onSubmit, ex
   try { minimumEnd = parseDate(form.start_date) } catch { /* Incomplete start date. */ }
 
   return (
-    <div className="add-form" style={{ opacity: disabled ? 0.35 : 1, pointerEvents: disabled ? 'none' : 'auto' }} onKeyDown={handleKeyDown}>
+    <div className="add-form" id="add-item-form" style={{ opacity: disabled ? 0.35 : 1, pointerEvents: disabled ? 'none' : 'auto' }} onKeyDown={handleKeyDown}>
       {(category === 'film' || category === 'dizi') && <MovieSearch key={`${category}-${searchVersion}`} category={category} disabled={disabled || submitting} onManual={() => setSourceId(null)} onPendingChange={setMovieLoading} onSelect={(movie) => {
         setSourceId(movie.id)
         setForm((current) => ({ ...current, title: movie.title, creator: movie.creator, year: movie.year }))
       }} />}
       <div className="form-row">
-        <input type="text" name="title" placeholder="Başlık *" maxLength={300} readOnly={sourceId != null} autoComplete="off" value={form.title} onChange={(e) => set('title', e.target.value)} />
+        <input id="add-item-title" type="text" name="title" placeholder="Başlık *" maxLength={300} readOnly={sourceId != null} autoComplete="off" value={form.title} onChange={(e) => set('title', e.target.value)} />
         <input type="text" name="creator" placeholder={creatorLabel} maxLength={300} readOnly={sourceId != null} autoComplete="off" value={form.creator} onChange={(e) => set('creator', e.target.value)} />
         <input type="text" name="year" readOnly={sourceId != null} aria-label="Yıl" aria-invalid={Boolean(yearError)} aria-describedby={yearError ? 'add-year-error' : undefined} placeholder="Yıl" inputMode="numeric" maxLength={4} autoComplete="off" value={form.year} onChange={(e) => set('year', e.target.value.replace(/\D/g, '').slice(0, 4))} />
       </div>

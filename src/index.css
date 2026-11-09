@@ -36,12 +36,6 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 .privacy-page p { margin-bottom:16px; color:var(--text-muted); }
 .privacy-page a { color:var(--text); text-underline-offset:3px; }
 .creation-hint { font-size:.76rem; color:var(--text-muted); line-height:1.6; }
-.bulk-import { border-top:1px solid var(--border); padding-top:10px; font-size:.8rem; line-height:1.6; }
-.bulk-import summary { cursor:pointer; color:var(--text-muted); }
-.bulk-import label { display:block; margin:10px 0 6px; }
-.bulk-import textarea { width:100%; min-width:0; padding:10px; border:1px solid var(--border); border-radius:10px; background:var(--surface); color:var(--text); font:inherit; resize:vertical; }
-.bulk-import .btn-add { margin:8px 0; }
-.bulk-import ul { padding-left:20px; max-height:200px; overflow:auto; overflow-wrap:anywhere; }
 .item-reactions-area { margin-top:10px; }
 .item-reactions { display:flex; align-items:center; gap:8px; }
 .item-reactions button, .item-reaction-count { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-width:52px; min-height:36px; padding:6px 10px; border:1px solid var(--border); border-radius:10px; background:var(--surface); color:var(--text-muted); font:inherit; font-size:.78rem; font-variant-numeric:tabular-nums; }
@@ -165,6 +159,18 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 .stat { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:12px 16px; flex:1; min-width:85px; text-align:center; box-shadow:var(--shadow); }
 .stat-num { font-size:1.6rem; font-weight:800; color:var(--active); line-height:1; }
 .stat-label { font-size:0.7rem; color:var(--text-muted); margin-top:4px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; }
+.getting-started { margin-bottom:16px; padding:20px; border:1px solid var(--active-light); border-radius:18px; background:var(--active-pale); }
+.getting-started-heading { display:flex; align-items:flex-start; gap:12px; margin-bottom:16px; }
+.getting-started-icon { display:grid; place-items:center; width:40px; height:40px; flex:none; border-radius:12px; background:var(--surface); font-size:1.2rem; }
+.getting-started-heading h2 { margin:1px 0 5px; font-size:1rem; letter-spacing:-.02em; }
+.getting-started-heading p { color:var(--text-muted); font-size:.8rem; line-height:1.6; }
+.getting-started-actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.getting-started-action { display:flex; align-items:flex-start; gap:10px; min-width:0; min-height:76px; padding:12px; border:1px solid var(--border); border-radius:12px; background:var(--surface); color:var(--text); text-align:left; font:inherit; cursor:pointer; transition:border-color .18s, transform .18s, box-shadow .18s; }
+.getting-started-action:hover { transform:translateY(-2px); border-color:var(--active-light); box-shadow:var(--shadow); }
+.getting-started-action > span:first-child { font-size:1.15rem; }
+.getting-started-action strong, .getting-started-action small { display:block; }
+.getting-started-action strong { font-size:.78rem; line-height:1.4; }
+.getting-started-action small { margin-top:4px; color:var(--text-muted); font-size:.68rem; line-height:1.4; }
 .add-form { background:var(--surface); border:2px solid var(--active-pale); border-radius:var(--radius); padding:18px; margin-bottom:20px; display:flex; flex-direction:column; gap:10px; box-shadow:var(--shadow); }
 .add-form-label { font-size:0.75rem; font-weight:700; color:var(--active); letter-spacing:0.05em; text-transform:uppercase; }
 .movie-search { min-width:0; padding-bottom:14px; border-bottom:1px solid var(--border); }
@@ -278,6 +284,9 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
   .tabs { gap:5px; }
   .tab-btn { font-size:0.78rem; padding:10px 4px; }
   .tab-btn .tab-icon { margin-right:2px; }
+  .getting-started { padding:16px; }
+  .getting-started-actions { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .getting-started-action { min-height:70px; padding:10px; }
   .item-actions { flex-direction:column; gap:5px; align-items:flex-end; }
   .imdb-user-select { margin-left:0; }
   .app-header { flex-direction:column; align-items:flex-start; }

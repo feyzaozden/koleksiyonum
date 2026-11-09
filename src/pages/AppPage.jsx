@@ -38,6 +38,7 @@ export default function AppPage() {
   const [sort, setSort] = useState('newest')
   const [editingItem, setEditingItem] = useState(null)
   const [deletingItem, setDeletingItem] = useState(null)
+  const [welcomeAction, setWelcomeAction] = useState(null)
 
   useEffect(() => {
     applyTabTheme(activeTab)
@@ -81,6 +82,22 @@ export default function AppPage() {
     items: filterAndSortItems(items, { category: activeTab, statusFilter, search, sort }),
   }]
   const statsItems = useMemo(() => items.filter((item) => item.category === activeTab), [items, activeTab])
+  const showGettingStarted = !loading && !loadError && items.length === 0
+
+  useEffect(() => {
+    if (!welcomeAction) return
+    const frame = requestAnimationFrame(() => {
+      const form = document.getElementById('add-item-form')
+      form?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      if (welcomeAction === 'movie' || welcomeAction === 'series') {
+        form?.querySelector('.movie-search input[type="search"]')?.focus({ preventScroll: true })
+      } else if (welcomeAction === 'book') {
+        document.getElementById('add-item-title')?.focus({ preventScroll: true })
+      }
+      setWelcomeAction(null)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [activeTab, welcomeAction])
 
   async function handleAdd(payload) {
     const emojiPool = tab.emojis
@@ -138,6 +155,26 @@ export default function AppPage() {
       <div className="main">
         <StatsBar items={statsItems} labels={tab.statusLabels} />
 
+        {showGettingStarted && <section className="getting-started" aria-labelledby="getting-started-title">
+          <div className="getting-started-heading">
+            <span className="getting-started-icon" aria-hidden="true">✨</span>
+            <div>
+              <h2 id="getting-started-title">Koleksiyonunu oluşturmaya başla</h2>
+              <p>İlk içeriğini eklemek için bir yol seç. Eklediğinde bu rehber kaybolacak.</p>
+            </div>
+          </div>
+          <div className="getting-started-actions">
+            <button type="button" className="getting-started-action" onClick={() => { setActiveTab('kitap'); setWelcomeAction('book') }}>
+              <span aria-hidden="true">📚</span><span><strong>Kitap ekle</strong><small>Başlık ve bilgileri gir</small></span>
+            </button>
+            <button type="button" className="getting-started-action" onClick={() => { setActiveTab('film'); setWelcomeAction('movie') }}>
+              <span aria-hidden="true">🎬</span><span><strong>Film ara</strong><small>Katalogda bulup ekle</small></span>
+            </button>
+            <button type="button" className="getting-started-action" onClick={() => { setActiveTab('dizi'); setWelcomeAction('series') }}>
+              <span aria-hidden="true">📺</span><span><strong>Dizi ara</strong><small>Katalogda bulup ekle</small></span>
+            </button>
+          </div>
+        </section>}
         <AddForm key={activeTab} category={activeTab} creatorLabel={tab.creatorLabel} onSubmit={handleAdd} existingItems={statsItems} />
         {loadError && <div className="auth-error" role="alert">Koleksiyon yüklenemedi. <button onClick={refresh}>Tekrar dene</button></div>}
         {loading && <p role="status">Koleksiyon yükleniyor…</p>}
