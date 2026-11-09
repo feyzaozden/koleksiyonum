@@ -37,7 +37,7 @@ export default function PersonPage() {
         {collection.loading ? <p role="status">Koleksiyon yükleniyor…</p> : collection.error ? <div className="auth-error" role="alert">Koleksiyon yüklenemedi. <button onClick={collection.refresh}>Tekrar dene</button></div> : <>
           <div className="social-tabs">{Object.entries(TABS).map(([key, value]) => <button key={key} className={category === key ? 'selected' : ''} onClick={() => setCategory(key)}>{value.emoji} {value.label} ({collection.items.filter((item) => item.category === key).length})</button>)}</div>
           <FilterBar search={search} onSearchChange={setSearch} statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} sort={sort} onSortChange={setSort} />
-          <ItemsGrid sections={[{ userId: id, userName: person.display_name, isOwner: false, items: filterAndSortItems(collection.items, { category, search, statusFilter, sort }) }]} tabEmoji={tab.emoji} activeFilter={statusFilter} labels={tab.statusLabels} />
+          <ItemsGrid sections={[{ userId: id, userName: person.display_name, isOwner: false, items: filterAndSortItems(collection.items, { category, search, statusFilter, sort }) }]} tabEmoji={tab.emoji} activeFilter={statusFilter} search={search} onSearchChange={setSearch} labels={tab.statusLabels} />
         </>}
       </>}
     </>}

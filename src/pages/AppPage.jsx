@@ -154,6 +154,8 @@ export default function AppPage() {
           sections={sections}
           tabEmoji={tab.emoji}
           activeFilter={statusFilter}
+          search={search}
+          onSearchChange={setSearch}
           labels={tab.statusLabels}
           onStatusChange={handleStatusChange}
           onProgress={updateItem}
