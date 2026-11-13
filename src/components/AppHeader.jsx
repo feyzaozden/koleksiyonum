@@ -2,11 +2,12 @@ import { NavLink } from 'react-router-dom'
 import { useFriends } from '../context/FriendsContext'
 import Brand from './Brand'
 import Notifications from './Notifications'
+import { BackButton } from './PageNavigation'
 
 export default function AppHeader() {
   const { incoming } = useFriends()
   return (
-    <header className="app-header">
+    <><header className="app-header">
       <NavLink className="brand" to="/app" aria-label="Koleksiyonum ana sayfa">
         <Brand />
       </NavLink>
@@ -19,6 +20,6 @@ export default function AppHeader() {
         </div>
         <Notifications />
       </nav>
-    </header>
+    </header><BackButton /></>
   )
 }

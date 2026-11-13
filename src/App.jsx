@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import PageNavigation from './components/PageNavigation'
 import { useAuth } from './context/AuthContext'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
@@ -36,11 +37,13 @@ function PublicOnlyRoute({ children }) {
 }
 
 export default function App() {
+  const location = useLocation()
   return (
     <div className="app-shell">
     <ActivityTracker />
     <div className="app-content">
-    <Routes>
+    <PageNavigation />
+    <Routes key={location.key}>
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />

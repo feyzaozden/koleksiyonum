@@ -25,7 +25,7 @@ export default function LoginPage() {
     setSubmitting(true)
     try {
       await signIn({ email, password })
-      navigate('/app')
+      navigate('/app', { replace: true })
     } catch (err) {
       const invalidCredentials = err?.code === 'invalid_credentials' || /^invalid login credentials\.?$/i.test(err?.message?.trim() || '')
       setError(invalidCredentials ? 'E-posta veya şifre yanlış.' : err.message)

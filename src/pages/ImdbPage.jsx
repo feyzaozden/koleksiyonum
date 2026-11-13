@@ -1,5 +1,6 @@
+import { usePageState } from '../hooks/usePageState'
 import ProfileAvatar from '../components/ProfileAvatar'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import AppHeader from '../components/AppHeader'
 import { useAuth } from '../context/AuthContext'
 import { useFriends } from '../context/FriendsContext'
@@ -19,8 +20,8 @@ export default function ImdbPage() {
   const friends = useFriends()
   const { items, loading, error, refresh } = useItems()
   const { byId } = useProfiles({ ids: [user.id, ...friends.friendIds] })
-  const [cat, setCat] = useState('tumu')
-  const [userFilter, setUserFilter] = useState('tumu')
+  const [cat, setCat] = usePageState('cat', 'tumu')
+  const [userFilter, setUserFilter] = usePageState('userFilter', 'tumu')
 
   const list = useMemo(() => {
     let filtered = items.filter((i) => i.rating || i.note)

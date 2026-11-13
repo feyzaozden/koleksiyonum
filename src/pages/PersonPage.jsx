@@ -1,5 +1,5 @@
+import { usePageState } from '../hooks/usePageState'
 import ProfileAvatar from '../components/ProfileAvatar'
-import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useFriends } from '../context/FriendsContext'
@@ -19,10 +19,10 @@ export default function PersonPage() {
   const validId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
   const people = useProfiles({ ids: validId ? [id] : [] })
   const collection = useItems('profile', validId ? id : null)
-  const [category, setCategory] = useState('kitap')
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('tumu')
-  const [sort, setSort] = useState('newest')
+  const [category, setCategory] = usePageState('category', 'kitap')
+  const [search, setSearch] = usePageState('search', '')
+  const [statusFilter, setStatusFilter] = usePageState('statusFilter', 'tumu')
+  const [sort, setSort] = usePageState('sort', 'newest')
   const person = people.byId[id]
   const canView = id === user.id || person?.is_public || friends.friendIds.includes(id)
   const tab = TABS[category]

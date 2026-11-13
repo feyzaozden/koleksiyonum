@@ -1,3 +1,4 @@
+import { usePageState } from '../hooks/usePageState'
 import ProfileAvatar from '../components/ProfileAvatar'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
@@ -32,10 +33,10 @@ export default function AppPage() {
   const { items, loading, error: loadError, refresh, addItem, updateItem, deleteItem } = useItems('mine')
   const [error, showError] = useErrorToast()
 
-  const [activeTab, setActiveTab] = useState('kitap')
-  const [statusFilter, setStatusFilter] = useState('tumu')
-  const [search, setSearch] = useState('')
-  const [sort, setSort] = useState('newest')
+  const [activeTab, setActiveTab] = usePageState('activeTab', 'kitap')
+  const [statusFilter, setStatusFilter] = usePageState('statusFilter', 'tumu')
+  const [search, setSearch] = usePageState('search', '')
+  const [sort, setSort] = usePageState('sort', 'newest')
   const [editingItem, setEditingItem] = useState(null)
   const [deletingItem, setDeletingItem] = useState(null)
   const [welcomeAction, setWelcomeAction] = useState(null)

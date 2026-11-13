@@ -1,5 +1,6 @@
+import { usePageState } from '../hooks/usePageState'
 import ProfileAvatar from '../components/ProfileAvatar'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useFriends } from '../context/FriendsContext'
@@ -11,14 +12,15 @@ import { usernameSearch } from '../utils/username'
 export default function DiscoverPage() {
   const { user } = useAuth()
   const friends = useFriends()
-  const [tab, setTab] = useState('search')
-  const [input, setInput] = useState('')
-  const [search, setSearch] = useState('')
-  const [page, setPage] = useState(0)
+  const [tab, setTab] = usePageState('tab', 'search')
+  const [input, setInput] = usePageState('input', '')
+  const [search, setSearch] = usePageState('search', '')
+  const [page, setPage] = usePageState('page', 0)
   useEffect(() => {
+    if (input === search) return
     const timer = setTimeout(() => { setSearch(input); setPage(0) }, 300)
     return () => clearTimeout(timer)
-  }, [input])
+  }, [input, search, setSearch, setPage])
   const ids = tab === 'friends' ? friends.friendIds : tab === 'requests'
     ? friends.rows.filter((row) => row.status === 'pending').map((row) => row.requester_id === user.id ? row.recipient_id : row.requester_id) : null
   const people = useProfiles({ search, ids, page })

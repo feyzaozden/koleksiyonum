@@ -553,6 +553,10 @@ body { background:radial-gradient(ellipse at 0 0, #dedfd8 0, transparent 55%), r
 .progress-field > input { width:100%; min-width:0; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); font:inherit; }
 
 /* Reaction notifications */
+.page-back-bar { max-width:1200px; margin:6px auto 0; padding:0 20px; }
+.page-back-bar button { display:inline-flex; align-items:center; gap:6px; min-height:40px; padding:4px 8px; border:0; border-radius:8px; background:transparent; color:var(--text-muted); font:inherit; font-size:.82rem; cursor:pointer; }
+.page-back-bar button span { font-size:1.5rem; line-height:1; }
+.page-back-bar button:hover { color:var(--text); background:var(--surface2); }
 .poster-dialog { width:min(560px,calc(100vw - 32px)); max-height:85dvh; overflow-y:auto; }
 .poster-selection { margin:12px 0; display:grid; gap:10px; }
 .poster-selection img { object-fit:cover; border-radius:8px; }
