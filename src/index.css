@@ -553,6 +553,17 @@ body { background:radial-gradient(ellipse at 0 0, #dedfd8 0, transparent 55%), r
 .progress-field > input { width:100%; min-width:0; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); font:inherit; }
 
 /* Reaction notifications */
+.item-card { position:relative; padding-top:58px; }
+.item-card.item-menu-open { z-index:5; }
+.item-overflow { position:absolute; top:10px; right:12px; }
+.item-overflow-toggle { width:40px; height:36px; border:0; border-radius:9px; background:transparent; color:var(--text-muted); font-size:1.7rem; line-height:1; cursor:pointer; }
+.item-overflow-toggle:hover, .item-overflow-toggle[aria-expanded="true"] { background:var(--surface2); color:var(--text); }
+.item-overflow-panel { position:absolute; top:calc(100% + 4px); right:0; width:190px; padding:6px; border:1px solid var(--border); border-radius:12px; background:var(--surface); box-shadow:0 8px 24px #0002; }
+.item-overflow-panel > a, .item-overflow-panel > button { display:block; width:100%; padding:11px 12px; border:0; border-radius:7px; background:transparent; color:var(--text); text-align:left; text-decoration:none; font:inherit; font-size:.82rem; cursor:pointer; }
+.item-overflow-panel > :hover { background:var(--surface2); }
+.item-overflow-panel > .yt:hover { color:#234d35; background:#dfecdf; }
+.item-overflow-panel > .edit:hover { color:#315f94; background:#e8f0fa; }
+.item-overflow-panel > .delete:hover { color:#bd2035; background:#fff0f0; }
 .add-item-toolbar { display:flex; justify-content:flex-end; margin:16px 0; }
 .add-item-dialog { margin:auto; width:min(820px,calc(100vw - 28px)); max-height:90dvh; padding:20px; overflow-y:auto; border:1px solid var(--border); border-radius:18px; background:var(--surface); color:var(--text); box-shadow:0 20px 60px #0003; }
 .add-item-dialog::backdrop { background:rgba(20,35,30,.45); backdrop-filter:blur(3px); }

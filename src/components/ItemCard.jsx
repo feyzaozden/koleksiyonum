@@ -1,6 +1,6 @@
 import ItemProgress from './ItemProgress'
 import ItemCover from './ItemCover'
-import { useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import PosterPicker from './PosterPicker'
 import ItemReactions from './ItemReactions'
 import StarsDisplay from './StarsDisplay'
@@ -11,6 +11,18 @@ import { useFriends } from '../context/FriendsContext'
 
 export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, onStatusChange, onEdit, onDelete, onProgress, reactions, commentCount }) {
   const location = useLocation()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menu = useRef(null)
+  const menuButton = useRef(null)
+  const menuId = useId()
+  useEffect(() => {
+    if (!menuOpen) return
+    function outside(event) { if (!menu.current?.contains(event.target)) setMenuOpen(false) }
+    function escape(event) { if (event.key === 'Escape') { setMenuOpen(false); menuButton.current?.focus() } }
+    document.addEventListener('pointerdown', outside)
+    document.addEventListener('keydown', escape)
+    return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', escape) }
+  }, [menuOpen])
   const [picker, setPicker] = useState(false)
   const [linked, setLinked] = useState(null)
   const displayedItem = linked?.id === item.id ? { ...item, poster_path: linked.poster_path, source: linked.source, source_id: linked.source_id } : item
@@ -25,7 +37,17 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
   const statusIcon = item.status === 'bekliyor' ? '⏳' : item.status === 'devam' ? '▶️' : '✅'
 
   return (
-    <div className="item-card" id={`item-${item.id}`} tabIndex={-1}>
+    <div className={`item-card${menuOpen ? ' item-menu-open' : ''}`} id={`item-${item.id}`} tabIndex={-1}>
+      <div className="item-overflow" ref={menu} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setMenuOpen(false) }}>
+        <button ref={menuButton} type="button" className="item-overflow-toggle" aria-label={`${item.title} işlemleri`} aria-expanded={menuOpen} aria-controls={menuId} onClick={() => setMenuOpen(value => !value)}>⋯</button>
+        {menuOpen && <div className="item-overflow-panel" id={menuId}>
+          <a href={imdbUrl} target="_blank" rel="noreferrer" className="imdb" onClick={() => setMenuOpen(false)}>IMDb’de ara</a>
+          <a href={ytUrl} target="_blank" rel="noreferrer" className="yt" onClick={() => setMenuOpen(false)}>▷ YouTube’da ara</a>
+          {isOwner && ['film','dizi'].includes(item.category) && !displayedItem.poster_path && !displayedItem.source_id && <button type="button" onClick={() => { setMenuOpen(false); setPicker(true) }}>Afiş seç</button>}
+          {isOwner && <button type="button" className="edit" onClick={() => { setMenuOpen(false); onEdit(item) }}>Düzenle</button>}
+          {isOwner && <button type="button" className="delete" onClick={() => { setMenuOpen(false); onDelete(item.id) }}>Sil</button>}
+        </div>}
+      </div>
       <ItemCover item={displayedItem} />
       {picker && <PosterPicker item={displayedItem} onClose={() => setPicker(false)} onSaved={saved => { setLinked(saved); setPicker(false) }} />}
       <div className="item-body">
@@ -53,7 +75,6 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
           }}>💬 Yorumlar{commentCount != null ? ` (${commentCount})` : ''}</Link>}
       </div>
       <div className="item-actions">
-        {isOwner && ['film','dizi'].includes(item.category) && !displayedItem.poster_path && !displayedItem.source_id && <button className="poster-pick-button" onClick={() => setPicker(true)}>Afiş seç</button>}
         {isOwner ? (
           <select
             className="status-select"
@@ -67,14 +88,6 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
           </select>
         ) : (
           <span className="status-badge">{statusIcon} {labels[item.status]}</span>
-        )}
-        <a href={imdbUrl} target="_blank" rel="noreferrer" className="btn-link imdb" title="IMDb">IMDb</a>
-        <a href={ytUrl} target="_blank" rel="noreferrer" className="btn-link yt" title="Fragman">&#9654;</a>
-        {isOwner && (
-          <button className="btn-edit" onClick={() => onEdit(item)} title="Düzenle" aria-label={`${item.title} öğesini düzenle`}>✏️</button>
-        )}
-        {isOwner && (
-          <button className="btn-delete" onClick={() => onDelete(item.id)} title="Sil" aria-label={`${item.title} öğesini sil`}>×</button>
         )}
       </div>
     </div>
