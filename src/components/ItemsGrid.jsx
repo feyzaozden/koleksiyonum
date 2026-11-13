@@ -9,7 +9,7 @@ const EMPTY_MESSAGES = {
   bitti: () => ({ icon: '✅', h: 'Tamamlanan yok', p: 'Henüz tamamladığın bir şey yok.' }),
 }
 
-export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, search = '', onClearFilters, onStatusChange, onEdit, onDelete, onProgress }) {
+export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, search = '', onClearFilters, onStatusChange, onEdit, onDelete, onProgress, onAddToPlaylist }) {
   const showSectionHeaders = sections.length > 1
   const reactions = useItemReactions(sections.flatMap((section) => section.items.map((item) => item.id)))
   const commentCounts = useCommentCounts(sections.flatMap(section => section.items.map(item => item.id)))
@@ -57,6 +57,7 @@ export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, se
             onEdit={onEdit}
             onDelete={onDelete}
             onProgress={onProgress}
+            onAddToPlaylist={onAddToPlaylist}
           />
         ))}
       </div>
@@ -91,6 +92,7 @@ export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, se
                 onEdit={onEdit}
                 onDelete={onDelete}
             onProgress={onProgress}
+            onAddToPlaylist={onAddToPlaylist}
               />
             ))
           )}

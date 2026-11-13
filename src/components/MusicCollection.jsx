@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient'
 import { usePageState } from '../hooks/usePageState'
 import ItemsGrid from './ItemsGrid'
 import MusicPlayer from './MusicPlayer'
+import AddToPlaylist from './AddToPlaylist'
 
 function PlaylistEditor({ playlist, songs, members, onToggle, onRename, onClose }) {
   const dialog = useRef(null)
@@ -42,6 +43,7 @@ export default function MusicCollection({ ownerId, allSongs, gridProps }) {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [playing, setPlaying] = useState(null)
+  const [addingSong, setAddingSong] = useState(null)
   const [savedVideos, setSavedVideos] = useState({})
   const version = useRef(0)
   const refresh = useCallback(async () => {
@@ -84,6 +86,11 @@ export default function MusicCollection({ ownerId, allSongs, gridProps }) {
     if (result.error) throw new Error('Liste adı kaydedilemedi.')
     setPlaylists(prev => prev.map(p => p.id === playlist.id ? result.data : p))
   }
+  async function addToPlaylist(playlistId, itemId) {
+    const result = await supabase.from('music_playlist_items').insert({ playlist_id: playlistId, item_id: itemId })
+    if (result.error && result.error.code !== '23505') throw new Error('Şarkı listeye eklenemedi. Tekrar dene.')
+    setMemberships(prev => prev.some(m => m.playlist_id === playlistId && m.item_id === itemId) ? prev : [...prev, { playlist_id: playlistId, item_id: itemId }])
+  }
   async function remove() {
     if (!window.confirm(`“${playlist.name}” listesi silinsin mi? Şarkılar Şarkılarım’da kalacak.`)) return
     setBusy(true); setError('')
@@ -117,7 +124,8 @@ export default function MusicCollection({ ownerId, allSongs, gridProps }) {
       {loading && <p role="status">Çalma listeleri yükleniyor…</p>}
       {error && <p className="auth-error" role="alert">{error} <button onClick={refresh}>Tekrar dene</button></p>}
     </section>
-    {playlist && !sections[0]?.items.length ? <p>Bu görünümde şarkı yok. {isOwner ? 'Listeyi düzenleyerek Şarkılarım’dan şarkı ekleyebilirsin.' : ''}</p> : <ItemsGrid {...gridProps} sections={sections} />}
+    {playlist && !sections[0]?.items.length ? <p>{memberIds.size ? 'Aramana uygun şarkı bulunamadı.' : 'Bu çalma listesi henüz boş.'} {isOwner && !memberIds.size && <>Listem’deki bir şarkının ⋯ menüsünden “Çalma listesine ekle”yi seçebilirsin.</>}</p> : <ItemsGrid {...gridProps} sections={sections} onAddToPlaylist={setAddingSong} />}
+    {addingSong && <AddToPlaylist song={addingSong} playlists={playlists} memberships={memberships} loading={loading} loadError={error} onRetry={refresh} onAdd={addToPlaylist} onClose={() => setAddingSong(null)} onCreate={() => { setAddingSong(null); setCreating(true) }} />}
     {editing && playlist && <PlaylistEditor key={playlist.id} playlist={playlist} songs={allSongs} members={memberIds} onToggle={toggle} onRename={rename} onClose={() => setEditing(false)} />}
     {playing && <MusicPlayer items={playing.map(song => savedVideos[song.id] ? { ...song, youtube_id: savedVideos[song.id] } : song)} onVideoSaved={(id, video) => setSavedVideos(prev => ({ ...prev, [id]: video }))} onClose={() => setPlaying(null)} />}
   </>
