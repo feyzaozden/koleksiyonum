@@ -272,7 +272,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 .status-select { background:var(--surface2); border:1.5px solid var(--border); border-radius:999px; color:var(--text); font-family:'Inter',sans-serif; font-size:0.74rem; font-weight:600; padding:4px 10px; cursor:pointer; outline:none; }
 .status-badge { font-size:0.78rem; color:var(--text-muted); padding:4px 8px; }
 .btn-edit { background:none; border:1.5px solid var(--border); border-radius:50%; color:var(--text-muted); width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:0.85rem; cursor:pointer; transition:all 0.18s; }
-.btn-edit:hover { border-color:var(--active); color:var(--active); background:var(--active-pale); }
+.btn-edit:hover { border-color:#5683b5; color:#315f94; background:#e8f0fa; }
 .btn-delete { background:none; border:1.5px solid var(--border); border-radius:50%; color:var(--text-muted); width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; cursor:pointer; transition:all 0.18s; }
 .btn-delete:hover { border-color:#e03; color:#e03; background:#fff0f0; }
 .btn-link { background:none; border:1.5px solid var(--border); border-radius:50%; color:var(--text-muted); width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; cursor:pointer; transition:all 0.18s; text-decoration:none; flex-shrink:0; }

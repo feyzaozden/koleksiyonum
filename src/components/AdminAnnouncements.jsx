@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 import { useAnnouncements } from '../hooks/useAnnouncements'
+import AdminPrivacy from './AdminPrivacy'
 
 export default function AdminAnnouncements() {
   const { user } = useAuth()
@@ -16,10 +17,20 @@ export default function AdminAnnouncements() {
   }, [userId])
   if (!permission?.allowed || permission.userId !== userId) return null
   return <section className="profile-password" aria-label="Admin">
-    <button className="password-toggle" type="button" aria-expanded={expanded} aria-controls="admin-announcements" onClick={() => setExpanded(v => !v)}>
+    <button className="password-toggle" type="button" aria-expanded={expanded} aria-controls="admin-sections" onClick={() => setExpanded(v => !v)}>
       <span>Admin</span><span aria-hidden="true">{expanded ? '−' : '+'}</span>
     </button>
-    {expanded && <AnnouncementManager key={userId} />}
+    {expanded && <div id="admin-sections" key={userId}><AdminPrivacy /><AnnouncementsPanel /></div>}
+  </section>
+}
+
+function AnnouncementsPanel() {
+  const [open, setOpen] = useState(false)
+  return <section className="profile-password">
+    <button className="password-toggle" type="button" aria-expanded={open} aria-controls="admin-announcements-panel" onClick={() => setOpen(value => !value)}>
+      <span>Duyurular</span><span aria-hidden="true">{open ? '−' : '+'}</span>
+    </button>
+    <div id="admin-announcements-panel" hidden={!open}>{open && <AnnouncementManager />}</div>
   </section>
 }
 
