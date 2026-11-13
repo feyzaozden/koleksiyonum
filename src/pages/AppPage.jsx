@@ -8,7 +8,7 @@ import AppHeader from '../components/AppHeader'
 import { useErrorToast } from '../hooks/useErrorToast'
 import { TABS } from '../constants/tabs'
 import { filterAndSortItems } from '../utils/filterSort'
-import AddForm from '../components/AddForm'
+import AddItemModal from '../components/AddItemModal'
 import FilterBar from '../components/FilterBar'
 import StatsBar from '../components/StatsBar'
 import ItemsGrid from '../components/ItemsGrid'
@@ -40,6 +40,7 @@ export default function AppPage() {
   const [editingItem, setEditingItem] = useState(null)
   const [deletingItem, setDeletingItem] = useState(null)
   const [welcomeAction, setWelcomeAction] = useState(null)
+  const [adding, setAdding] = useState(false)
 
   useEffect(() => {
     applyTabTheme(activeTab)
@@ -87,17 +88,8 @@ export default function AppPage() {
 
   useEffect(() => {
     if (!welcomeAction) return
-    const frame = requestAnimationFrame(() => {
-      const form = document.getElementById('add-item-form')
-      form?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      if (welcomeAction === 'movie' || welcomeAction === 'series') {
-        form?.querySelector('.movie-search input[type="search"]')?.focus({ preventScroll: true })
-      } else if (welcomeAction === 'book') {
-        document.getElementById('add-item-title')?.focus({ preventScroll: true })
-      }
-      setWelcomeAction(null)
-    })
-    return () => cancelAnimationFrame(frame)
+    setAdding(true)
+    setWelcomeAction(null)
   }, [activeTab, welcomeAction])
 
   async function handleAdd(payload) {
@@ -106,8 +98,7 @@ export default function AppPage() {
     try {
       await addItem({ ...payload, user_id: user.id, category: activeTab, emoji })
     } catch (e) {
-      showError('Eklenemedi: ' + e.message)
-      return false
+      throw new Error('Eklenemedi: ' + e.message)
     }
   }
 
@@ -176,7 +167,8 @@ export default function AppPage() {
             </button>
           </div>
         </section>}
-        <AddForm key={activeTab} category={activeTab} creatorLabel={tab.creatorLabel} onSubmit={handleAdd} existingItems={statsItems} />
+        <div className="add-item-toolbar"><button type="button" className="btn-add" onClick={() => setAdding(true)}>+ Yeni ekle</button></div>
+        {adding && <AddItemModal key={activeTab} category={activeTab} creatorLabel={tab.creatorLabel} onSubmit={handleAdd} existingItems={statsItems} onClose={() => setAdding(false)} />}
         {loadError && <div className="auth-error" role="alert">Koleksiyon yüklenemedi. <button onClick={refresh}>Tekrar dene</button></div>}
         {loading && <p role="status">Koleksiyon yükleniyor…</p>}
         <FilterBar

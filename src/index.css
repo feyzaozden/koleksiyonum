@@ -553,6 +553,14 @@ body { background:radial-gradient(ellipse at 0 0, #dedfd8 0, transparent 55%), r
 .progress-field > input { width:100%; min-width:0; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); font:inherit; }
 
 /* Reaction notifications */
+.add-item-toolbar { display:flex; justify-content:flex-end; margin:16px 0; }
+.add-item-dialog { margin:auto; width:min(820px,calc(100vw - 28px)); max-height:90dvh; padding:20px; overflow-y:auto; border:1px solid var(--border); border-radius:18px; background:var(--surface); color:var(--text); box-shadow:0 20px 60px #0003; }
+.add-item-dialog::backdrop { background:rgba(20,35,30,.45); backdrop-filter:blur(3px); }
+.add-item-dialog-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
+.add-item-dialog-heading h2 { font-size:1.1rem; margin:0; }
+.add-item-dialog-heading button { width:40px; height:40px; border:0; border-radius:10px; font-size:1.6rem; background:var(--surface2); color:var(--text); cursor:pointer; }
+.add-item-dialog .add-form { margin:0; }
+@media(max-width:520px) { .add-item-dialog { padding:14px; } .add-item-dialog .add-form { padding:12px; } }
 .page-back-bar { max-width:1200px; margin:6px auto 0; padding:0 20px; }
 .page-back-bar button { display:inline-flex; align-items:center; gap:6px; min-height:40px; padding:4px 8px; border:0; border-radius:8px; background:transparent; color:var(--text-muted); font:inherit; font-size:.82rem; cursor:pointer; }
 .page-back-bar button span { font-size:1.5rem; line-height:1; }
