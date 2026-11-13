@@ -1,5 +1,6 @@
 import ItemProgress from './ItemProgress'
 import ItemCover from './ItemCover'
+import MusicPlayer from './MusicPlayer'
 import { useEffect, useId, useRef, useState } from 'react'
 import PosterPicker from './PosterPicker'
 import ItemReactions from './ItemReactions'
@@ -12,6 +13,8 @@ import { useFriends } from '../context/FriendsContext'
 export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, onStatusChange, onEdit, onDelete, onProgress, reactions, commentCount }) {
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [playing, setPlaying] = useState(false)
+  const [savedVideo, setSavedVideo] = useState(null)
   const menu = useRef(null)
   const menuButton = useRef(null)
   const menuId = useId()
@@ -29,11 +32,11 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
   const { user } = useAuth()
   const friends = useFriends()
   const canComment = item.user_id === user?.id || friends.friendIds.includes(item.user_id)
-  const meta = [item.creator, item.year].filter(Boolean).join(' · ')
+  const meta = [item.creator, item.album, item.year].filter(Boolean).join(' · ')
   const sd = fmtDate(item.start_date)
   const ed = fmtDate(item.end_date)
   const imdbUrl = 'https://www.imdb.com/find?q=' + encodeURIComponent(item.title) + '&s=tt'
-  const ytUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(item.title + ' fragman trailer')
+  const ytUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(item.category === 'muzik' ? `${item.creator || ''} ${item.title}` : item.title + ' fragman trailer')
   const statusIcon = item.status === 'bekliyor' ? '⏳' : item.status === 'devam' ? '▶️' : '✅'
 
   return (
@@ -41,7 +44,7 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
       <div className="item-overflow" ref={menu} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setMenuOpen(false) }}>
         <button ref={menuButton} type="button" className="item-overflow-toggle" aria-label={`${item.title} işlemleri`} aria-expanded={menuOpen} aria-controls={menuId} onClick={() => setMenuOpen(value => !value)}>⋯</button>
         {menuOpen && <div className="item-overflow-panel" id={menuId}>
-          <a href={imdbUrl} target="_blank" rel="noreferrer" className="imdb" onClick={() => setMenuOpen(false)}>IMDb’de ara</a>
+          {item.category !== 'muzik' && <a href={imdbUrl} target="_blank" rel="noreferrer" className="imdb" onClick={() => setMenuOpen(false)}>IMDb’de ara</a>}
           <a href={ytUrl} target="_blank" rel="noreferrer" className="yt" onClick={() => setMenuOpen(false)}>▷ YouTube’da ara</a>
           {isOwner && ['film','dizi'].includes(item.category) && !displayedItem.poster_path && !displayedItem.source_id && <button type="button" onClick={() => { setMenuOpen(false); setPicker(true) }}>Afiş seç</button>}
           {isOwner && <button type="button" className="edit" onClick={() => { setMenuOpen(false); onEdit(item) }}>Düzenle</button>}
@@ -49,6 +52,7 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
         </div>}
       </div>
       <ItemCover item={displayedItem} />
+      {playing && <MusicPlayer items={[savedVideo ? { ...item, youtube_id: savedVideo } : item]} onVideoSaved={(_id, video) => setSavedVideo(video)} onClose={() => setPlaying(false)} />}
       {picker && <PosterPicker item={displayedItem} onClose={() => setPicker(false)} onSaved={saved => { setLinked(saved); setPicker(false) }} />}
       <div className="item-body">
         <div className="item-title">{item.title}</div>
@@ -59,7 +63,7 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
             {ed && <span>🏁 {ed}</span>}
           </div>
         )}
-        <ItemProgress item={item} isOwner={isOwner} onSave={onProgress} />
+        {item.category === 'muzik' ? <button type="button" className="music-listen btn-cancel" onClick={() => setPlaying(true)}>▷ Dinle</button> : <ItemProgress item={item} isOwner={isOwner} onSave={onProgress} />}
         <StarsDisplay rating={item.rating} />
         {item.note && <div className="item-note">&quot;{item.note}&quot;</div>}
         {showOwner && <div className="item-owner-tag">{ownerName}</div>}
@@ -74,7 +78,7 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
             } catch { /* optional storage */ }
           }}>💬 Yorumlar{commentCount != null ? ` (${commentCount})` : ''}</Link>}
       </div>
-      <div className="item-actions">
+      {item.category !== 'muzik' && <div className="item-actions">
         {isOwner ? (
           <select
             className="status-select"
@@ -89,7 +93,7 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
         ) : (
           <span className="status-badge">{statusIcon} {labels[item.status]}</span>
         )}
-      </div>
+      </div>}
     </div>
   )
 }

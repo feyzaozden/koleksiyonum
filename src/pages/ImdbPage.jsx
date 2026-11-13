@@ -7,12 +7,13 @@ import { useFriends } from '../context/FriendsContext'
 import { useItems } from '../hooks/useItems'
 import { useProfiles } from '../hooks/useProfiles'
 
-const CAT_LABELS = { kitap: '📚 Kitap', film: '🎬 Film', dizi: '📺 Dizi' }
+const CAT_LABELS = { kitap: '📚 Kitap', film: '🎬 Film', dizi: '📺 Dizi', muzik: '🎵 Müzik' }
 const CAT_FILTERS = [
   { value: 'tumu', label: 'Tümü' },
   { value: 'kitap', label: '📚 Kitap' },
   { value: 'film', label: '🎬 Film' },
   { value: 'dizi', label: '📺 Dizi' },
+  { value: 'muzik', label: '🎵 Müzik' },
 ]
 
 export default function ImdbPage() {
@@ -30,7 +31,7 @@ export default function ImdbPage() {
 
     const grouped = {}
     filtered.forEach((item) => {
-      const key = item.title.toLowerCase() + '__' + item.category
+      const key = item.category === 'muzik' ? `muzik:${item.music_recording_id || item.title.toLowerCase() + ':' + item.creator}` : item.title.toLowerCase() + '__' + item.category
       if (!grouped[key]) {
         grouped[key] = { title: item.title, category: item.category, emoji: item.emoji, creator: item.creator, year: item.year, ratings: {}, notes: {} }
       }
@@ -106,7 +107,7 @@ export default function ImdbPage() {
               const ratingUids = Object.keys(item.ratings)
 
               return (
-                <div className="imdb-card" key={item.category + '__' + item.title}>
+                <div className="imdb-card" key={item.category + '__' + item.title + '__' + item.creator}>
                   <div className={'imdb-rank' + (isTop3 ? ' top3' : '')}>{rank}</div>
                   <div className="imdb-emoji">{item.emoji}</div>
                   <div className="imdb-body">

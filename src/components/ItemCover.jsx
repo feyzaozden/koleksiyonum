@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { getMovies } from '../lib/movieApi'
+import { MusicCover } from './MusicSearch'
 
 const cache = new Map()
 const queue = []
@@ -53,6 +54,7 @@ export default function ItemCover({ item }) {
     observer.observe(root.current)
     return () => { cancelled = true; observer.disconnect() }
   }, [identity, media, item.category, item.source, item.source_id, item.poster_path])
+  if (item.category === 'muzik') return <MusicCover releaseId={item.music_release_id} />
   return <div ref={root} className={media ? 'item-cover' : 'item-emoji'}>
     {url && failed !== url ? <img src={url} alt={`${item.title} afişi`} width="72" height="108" loading="lazy" decoding="async" onError={() => setFailed(url)} /> : <span aria-hidden="true">{item.emoji}</span>}
   </div>

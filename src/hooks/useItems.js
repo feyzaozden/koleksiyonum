@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useFriends } from '../context/FriendsContext'
 import { validateItemDates, itemYearError } from '../utils/itemDates'
 import { itemWriteMessage } from '../utils/itemIdentity'
+import { musicApi } from '../lib/musicApi'
 
 export function useItems(scope = 'circle', ownerId = null) {
   const { user } = useAuth()
@@ -45,7 +46,9 @@ export function useItems(scope = 'circle', ownerId = null) {
     if (yearError) throw new Error(yearError)
     validateItemDates(payload)
     let data
-    if (payload.source_id != null) {
+    if (payload.music_recording_id) {
+      data = (await musicApi({}, { method: 'POST', body: JSON.stringify(payload) })).item
+    } else if (payload.source_id != null) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) throw new Error('Lütfen tekrar giriş yap.')
       const response = await fetch('/api/items', {

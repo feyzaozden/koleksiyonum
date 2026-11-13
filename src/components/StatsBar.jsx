@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { getCompletionStats, getCurrentMonth, getMonthlyCompletionStats } from '../utils/collectionStats'
 
-const CATEGORY_LABELS = { kitap: 'Kitap', film: 'Film', dizi: 'Dizi' }
-const CATEGORY_EMOJIS = { kitap: '📚', film: '🎬', dizi: '📺' }
+const CATEGORY_LABELS = { kitap: 'Kitap', film: 'Film', dizi: 'Dizi', muzik: 'Müzik' }
+const CATEGORY_EMOJIS = { kitap: '📚', film: '🎬', dizi: '📺', muzik: '🎵' }
 
 function formatActivityDate(value) {
   return new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })

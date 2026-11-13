@@ -12,6 +12,7 @@ export default function AppFooter() {
         <a href="https://www.themoviedb.org" target="_blank" rel="noreferrer"><img src="/tmdb.svg" alt="TMDB" width="80" height="32" /></a>
         <p>Film ve dizi bilgileri ile afişler TMDB tarafından sağlanır.</p>
         <p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+        <p>Müzik bilgileri <a href="https://musicbrainz.org" target="_blank" rel="noreferrer">MusicBrainz</a>, kapaklar <a href="https://coverartarchive.org" target="_blank" rel="noreferrer">Cover Art Archive</a> üzerinden sağlanır. Dinleme için YouTube oynatıcısı kullanılır.</p>
       </details>
       </div>
       <nav className="app-footer-links" aria-label="Alt menü">

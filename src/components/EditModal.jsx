@@ -65,19 +65,19 @@ export default function EditModal({ item, onClose, onSave }) {
         <div className="modal-title">✏️ Düzenle</div>
         <div className="modal-row">
           <input type="text" placeholder="Başlık *" value={form.title} onChange={(e) => set('title', e.target.value)} />
-          <input type="text" placeholder="Yazar / Yönetmen / Yapımcı" value={form.creator} onChange={(e) => set('creator', e.target.value)} />
+          <input type="text" placeholder={item.category === 'muzik' ? 'Sanatçı' : 'Yazar / Yönetmen / Yapımcı'} value={form.creator} onChange={(e) => set('creator', e.target.value)} />
         </div>
         <div className="modal-row">
           <input type="text" placeholder="Yıl" aria-label="Yıl" aria-invalid={Boolean(yearError)} aria-describedby={yearError ? 'edit-year-error' : undefined} inputMode="numeric" maxLength={4} style={{ flex: 0.5, minWidth: 80 }} value={form.year} onChange={(e) => set('year', e.target.value.replace(/\D/g, '').slice(0, 4))} />
-          <select style={{ flex: 1, minWidth: 140 }} value={form.status} onChange={(e) => set('status', e.target.value)}>
+          {item.category !== 'muzik' && <select style={{ flex: 1, minWidth: 140 }} value={form.status} onChange={(e) => set('status', e.target.value)}>
             <option value="bekliyor">⏳ Listede Bekliyor</option>
             <option value="devam">▶️ Devam Ediyor</option>
             <option value="bitti">✅ Tamamlandı</option>
-          </select>
+          </select>}
         </div>
         <input type="text" placeholder="Not (isteğe bağlı)" value={form.note} onChange={(e) => set('note', e.target.value)} />
         {yearError && <div className="auth-error" role="alert" id="edit-year-error">{yearError}</div>}
-        <div className="modal-date-row">
+        {item.category !== 'muzik' && <div className="modal-date-row">
           <div className="modal-date-group">
             <label>📅 Başlangıç Tarihi</label>
             <DateField label="Başlangıç tarihi" value={form.start_date} onChange={(value) => set('start_date', value)} max={localToday()} />
@@ -87,6 +87,7 @@ export default function EditModal({ item, onClose, onSave }) {
             <DateField label="Bitiş tarihi" value={form.end_date} onChange={(value) => set('end_date', value)} min={minimumEnd} max={localToday()} />
           </div>
         </div>
+        }
         {dateError && <div className="auth-error" role="alert">{dateError}</div>}
         <div className="modal-star-row">
           <div className="modal-star-label">⭐ Puan (10 üzerinden)</div>

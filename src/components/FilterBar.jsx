@@ -5,11 +5,11 @@ const STATUS_FILTERS = [
   { value: 'bitti', label: '✅ Tamam' },
 ]
 
-export default function FilterBar({ search, onSearchChange, statusFilter, onStatusFilterChange, sort, onSortChange }) {
+export default function FilterBar({ search, onSearchChange, statusFilter, onStatusFilterChange, sort, onSortChange, category }) {
   return (
     <div className="filter-bar" role="group" aria-label="Koleksiyon arama ve filtreleri">
-      <input type="search" aria-label="Başlık, yazar veya nota göre ara" placeholder="Başlık, yazar veya not ara..." value={search} onChange={(e) => onSearchChange(e.target.value)} />
-      {STATUS_FILTERS.map((f) => (
+      <input type="search" aria-label={category === 'muzik' ? 'Şarkı, sanatçı, albüm veya not ara' : 'Başlık, yazar veya nota göre ara'} placeholder={category === 'muzik' ? 'Şarkı, sanatçı, albüm veya not ara…' : 'Başlık, yazar veya not ara...'} value={search} onChange={(e) => onSearchChange(e.target.value)} />
+      {category !== 'muzik' && STATUS_FILTERS.map((f) => (
         <button
           key={f.value}
           type="button"

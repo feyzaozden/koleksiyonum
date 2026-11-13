@@ -1,6 +1,6 @@
 export const TABS = {
   kitap: {
-    label: 'Kitaplar',
+    label: 'Kitap',
     emoji: '📚',
     creatorLabel: 'Yazar',
     emojis: ['📖', '📕', '📗', '📘', '📙', '🔖'],
@@ -8,7 +8,7 @@ export const TABS = {
     colorVar: 'kitap',
   },
   film: {
-    label: 'Filmler',
+    label: 'Film',
     emoji: '🎬',
     creatorLabel: 'Yönetmen / Yapımcı',
     emojis: ['🎬', '🎥', '🍿', '🎞️', '🎭'],
@@ -16,12 +16,17 @@ export const TABS = {
     colorVar: 'film',
   },
   dizi: {
-    label: 'Diziler',
+    label: 'Dizi',
     emoji: '📺',
     creatorLabel: 'Yaratıcı / Yapımcı',
     emojis: ['📺', '🖥️', '📡', '🎭', '▶️'],
     statusLabels: { bekliyor: 'İzlenecek', devam: 'İzleniyor', bitti: 'İzlendi' },
     colorVar: 'dizi',
+  },
+  muzik: {
+    label: 'Müzik', emoji: '🎵', creatorLabel: 'Sanatçı', emojis: ['🎵'],
+    statusLabels: {},
+    colorVar: 'muzik',
   },
 }
 

@@ -9,7 +9,7 @@ import { TABS } from '../constants/tabs'
 import { filterAndSortItems } from '../utils/filterSort'
 import AppHeader from '../components/AppHeader'
 import FriendActions from '../components/FriendActions'
-import ItemsGrid from '../components/ItemsGrid'
+import ItemsGrid from '../components/CollectionGrid'
 import FilterBar from '../components/FilterBar'
 
 export default function PersonPage() {
@@ -36,8 +36,8 @@ export default function PersonPage() {
         {id === user.id && <p><Link to="/app">Koleksiyonumu düzenle →</Link></p>}
         {collection.loading ? <p role="status">Koleksiyon yükleniyor…</p> : collection.error ? <div className="auth-error" role="alert">Koleksiyon yüklenemedi. <button onClick={collection.refresh}>Tekrar dene</button></div> : <>
           <div className="social-tabs">{Object.entries(TABS).map(([key, value]) => <button key={key} className={category === key ? 'selected' : ''} onClick={() => setCategory(key)}>{value.emoji} {value.label} ({collection.items.filter((item) => item.category === key).length})</button>)}</div>
-          <FilterBar search={search} onSearchChange={setSearch} statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} sort={sort} onSortChange={setSort} />
-          <ItemsGrid sections={[{ userId: id, userName: person.display_name, isOwner: false, items: filterAndSortItems(collection.items, { category, search, statusFilter, sort }) }]} tabEmoji={tab.emoji} activeFilter={statusFilter} search={search} onClearFilters={() => { setSearch(''); setStatusFilter('tumu') }} labels={tab.statusLabels} />
+          <FilterBar category={category} search={search} onSearchChange={setSearch} statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} sort={sort} onSortChange={setSort} />
+          <ItemsGrid musicOwner={category === 'muzik' ? id : null} allSongs={collection.items.filter(i => i.category === 'muzik')} sections={[{ userId: id, userName: person.display_name, isOwner: false, items: filterAndSortItems(collection.items, { category, search, statusFilter, sort }) }]} tabEmoji={tab.emoji} activeFilter={statusFilter} search={search} onClearFilters={() => { setSearch(''); setStatusFilter('tumu') }} labels={tab.statusLabels} />
         </>}
       </>}
     </>}

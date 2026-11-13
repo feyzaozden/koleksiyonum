@@ -11,7 +11,7 @@ import { filterAndSortItems } from '../utils/filterSort'
 import AddItemModal from '../components/AddItemModal'
 import FilterBar from '../components/FilterBar'
 import StatsBar from '../components/StatsBar'
-import ItemsGrid from '../components/ItemsGrid'
+import ItemsGrid from '../components/CollectionGrid'
 import EditModal from '../components/EditModal'
 import ErrorToast from '../components/ErrorToast'
 import DeleteConfirm from '../components/DeleteConfirm'
@@ -145,7 +145,7 @@ export default function AppPage() {
       </div>
 
       <div className="main">
-        <StatsBar items={statsItems} collectionItems={items} labels={tab.statusLabels} loading={loading} error={Boolean(loadError)} />
+        {activeTab !== 'muzik' && <StatsBar items={statsItems} collectionItems={items.filter(item => item.category !== 'muzik')} labels={tab.statusLabels} loading={loading} error={Boolean(loadError)} />}
 
         {showGettingStarted && <section className="getting-started" aria-labelledby="getting-started-title">
           <div className="getting-started-heading">
@@ -172,6 +172,7 @@ export default function AppPage() {
         {loadError && <div className="auth-error" role="alert">Koleksiyon yüklenemedi. <button onClick={refresh}>Tekrar dene</button></div>}
         {loading && <p role="status">Koleksiyon yükleniyor…</p>}
         <FilterBar
+          category={activeTab}
           search={search}
           onSearchChange={setSearch}
           statusFilter={statusFilter}
@@ -181,9 +182,11 @@ export default function AppPage() {
         />
 
         <ItemsGrid
+          musicOwner={activeTab === 'muzik' ? user.id : null}
+          allSongs={statsItems}
           sections={sections}
           tabEmoji={tab.emoji}
-          activeFilter={statusFilter}
+          activeFilter={activeTab === 'muzik' ? 'tumu' : statusFilter}
           search={search}
           onClearFilters={() => { setSearch(''); setStatusFilter('tumu') }}
           labels={tab.statusLabels}

@@ -9,13 +9,14 @@ function compareDates(a, b, direction) {
 
 export function filterAndSortItems(items, { category, statusFilter, search, sort }) {
   let arr = items.filter((i) => i.category === category)
-  if (statusFilter !== 'tumu') arr = arr.filter((i) => i.status === statusFilter)
+  if (category !== 'muzik' && statusFilter !== 'tumu') arr = arr.filter((i) => i.status === statusFilter)
   const q = search.trim().toLowerCase()
   if (q) {
     arr = arr.filter(
       (i) =>
         i.title.toLowerCase().includes(q) ||
         (i.creator && i.creator.toLowerCase().includes(q)) ||
+        (i.album && i.album.toLowerCase().includes(q)) ||
         (i.note && i.note.toLowerCase().includes(q)),
     )
   }

@@ -131,7 +131,7 @@ export default function Notifications() {
           ? <span><strong>{entry.username ? `@${entry.username}` : 'Bir kullanıcı'}</strong> seni arkadaş ekledi.</span>
           : entry.kind === 'comment' || entry.kind === 'reply'
           ? <span><strong>{entry.username ? `@${entry.username}` : 'Bir kişi'}</strong> {entry.kind === 'reply' ? 'yorumuna cevap verdi' : `“${entry.title}” içeriğine yorum yaptı`}.</span>
-          : <span>Bir kişi <strong>{entry.title}</strong> {({ film: 'filmine', dizi: 'dizine', kitap: 'kitabına' })[entry.category] || 'içeriğine'} {entry.reaction === 1 ? 'beğeni' : 'beğenmeme'} bıraktı.</span>}
+          : <span>Bir kişi <strong>{entry.title}</strong> {({ film: 'filmine', dizi: 'dizine', kitap: 'kitabına', muzik: 'şarkına' })[entry.category] || 'içeriğine'} {entry.reaction === 1 ? 'beğeni' : 'beğenmeme'} bıraktı.</span>}
         <time dateTime={entry.created_at}>{new Date(entry.created_at).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' })}</time>
         {!entry.read_at && <small>Okunmadı</small>}
       </button><label className="notification-read"><input type="checkbox" checked={Boolean(entry.read_at)} disabled={busy || Boolean(entry.read_at)} onChange={() => markRead(entry)} /> Okundu</label></li>)}</ul>

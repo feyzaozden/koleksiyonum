@@ -28,7 +28,7 @@ export default function AddItemModal({ category, creatorLabel, existingItems, on
     } finally { saving.current = false; setBusy(false) }
   }
   return <dialog ref={dialog} className="add-item-dialog" aria-labelledby="add-item-heading" onCancel={event => { event.preventDefault(); if (!saving.current) onClose() }}>
-    <div className="add-item-dialog-heading"><h2 id="add-item-heading">{({ kitap: 'Kitap', film: 'Film', dizi: 'Dizi' })[category]} ekle</h2><button type="button" aria-label="Ekleme penceresini kapat" disabled={busy} onClick={onClose}>×</button></div>
+    <div className="add-item-dialog-heading"><h2 id="add-item-heading">{({ kitap: 'Kitap', film: 'Film', dizi: 'Dizi', muzik: 'Şarkı' })[category]} ekle</h2><button type="button" aria-label="Ekleme penceresini kapat" disabled={busy} onClick={onClose}>×</button></div>
     <AddForm category={category} creatorLabel={creatorLabel} existingItems={existingItems} onSubmit={submit} />
   </dialog>
 }
