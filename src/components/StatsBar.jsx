@@ -72,12 +72,13 @@ export default function StatsBar({ items, collectionItems = items, labels, loadi
 
   return (
     <>
-      <div className="stats-bar">
-        <div className="stat"><div className="stat-num">{counts.tumu}</div><div className="stat-label">Toplam</div></div>
-        <div className="stat"><div className="stat-num">{counts.bekliyor}</div><div className="stat-label">{labels.bekliyor}</div></div>
-        <div className="stat"><div className="stat-num">{counts.devam}</div><div className="stat-label">{labels.devam}</div></div>
-        <div className="stat"><div className="stat-num">{counts.bitti}</div><div className="stat-label">{labels.bitti}</div></div>
-      </div>
+      <details className="collection-overview">
+        <summary>
+          <span className="collection-overview-counts">
+            {[['tumu', 'Toplam'], ['bekliyor', labels.bekliyor], ['devam', labels.devam], ['bitti', labels.bitti]].map(([key, label]) => <span key={key}><span>{label}</span> <strong>{loading || error ? '—' : counts[key]}</strong></span>)}
+          </span>
+          <span className="collection-overview-toggle"><span>Ayrıntılar</span><span className="collection-overview-icon" aria-hidden="true" /></span>
+        </summary>
       <section className="collection-completion" aria-label="Genel koleksiyon tamamlanma oranı">
         <div className="collection-completion-heading">
           <div>
@@ -121,6 +122,7 @@ export default function StatsBar({ items, collectionItems = items, labels, loadi
           </div>
         </details>
       </section>
+      </details>
     </>
   )
 }

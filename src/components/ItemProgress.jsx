@@ -105,7 +105,7 @@ export default function ItemProgress({ item, isOwner, onSave }) {
   }
   return <div className="item-progress">
     {p.position != null && <p>{progressText(item)}</p>}
-    {!series && p.position != null && p.total > 0 && <progress value={p.position} max={p.total} aria-label={`${item.title} ilerlemesi`} />}
+    {item.status !== 'bitti' && !series && p.position != null && p.total > 0 && <progress value={p.position} max={p.total} aria-label={`${item.title} ilerlemesi`} />}
     {isOwner && item.status !== 'bitti' && <div className="progress-actions">
       <button type="button" disabled={busy} onClick={() => { setUndo(null); setMode('edit') }}>İlerlemeyi güncelle</button>
       {item.status !== 'bitti' && <>

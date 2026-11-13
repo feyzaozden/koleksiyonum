@@ -1,5 +1,6 @@
 import ItemProgress from './ItemProgress'
 import ItemCover from './ItemCover'
+import ItemNote from './ItemNote'
 import MusicPlayer from './MusicPlayer'
 import { useEffect, useId, useRef, useState } from 'react'
 import PosterPicker from './PosterPicker'
@@ -56,8 +57,11 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
       {playing && <MusicPlayer items={[savedVideo ? { ...item, youtube_id: savedVideo } : item]} onVideoSaved={(_id, video) => setSavedVideo(video)} onClose={() => setPlaying(false)} />}
       {picker && <PosterPicker item={displayedItem} onClose={() => setPicker(false)} onSaved={saved => { setLinked(saved); setPicker(false) }} />}
       <div className="item-body">
-        <div className="item-title">{item.title}</div>
-        {meta && <div className="item-meta">{meta}</div>}
+        <div className="item-heading">
+          <div className="item-title">{item.title}</div>
+          {meta && <div className="item-meta">{meta}</div>}
+          <StarsDisplay rating={item.rating} />
+        </div>
         {(sd || ed) && (
           <div className="item-dates">
             {sd && <span>📅 {sd}</span>}
@@ -65,11 +69,11 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
           </div>
         )}
         {item.category === 'muzik' ? <button type="button" className="music-listen btn-cancel" onClick={() => setPlaying(true)}>▷ Dinle</button> : <ItemProgress item={item} isOwner={isOwner} onSave={onProgress} />}
-        <StarsDisplay rating={item.rating} />
-        {item.note && <div className="item-note">&quot;{item.note}&quot;</div>}
+        {item.note && <ItemNote key={item.note} note={item.note} />}
         {showOwner && <div className="item-owner-tag">{ownerName}</div>}
+        <div className="item-engagement">
         {reactions && <ItemReactions item={item} counts={reactions.data[item.id]} busy={reactions.isBusy(item.id)} loadError={reactions.error} onReact={reactions.react} onRetry={reactions.refresh} />}
-        {canComment && <Link className="comment-link" to={`/items/${item.id}/comments`}
+        {canComment && <Link className="comment-link" title="Yorumları aç" aria-label={`${item.title}: yorumları aç, ${commentCount ?? 'yorum sayısı yükleniyor'}${commentCount != null ? ' yorum' : ''}`} to={`/items/${item.id}/comments`}
           state={{ returnTo: { path: location.pathname + location.search, key: location.state?.restoreKey || location.key, index: window.history.state?.idx, userId: user.id } }}
           onClick={() => {
             const key = location.state?.restoreKey || location.key
@@ -77,7 +81,8 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
               sessionStorage.setItem(`page-scroll:${user.id}:${key}`, String(window.scrollY))
               sessionStorage.setItem(`page-anchor:${user.id}:${key}`, JSON.stringify({ id: `item-${item.id}`, offset: document.getElementById(`item-${item.id}`)?.getBoundingClientRect().top || 0 }))
             } catch { /* optional storage */ }
-          }}>💬 Yorumlar{commentCount != null ? ` (${commentCount})` : ''}</Link>}
+          }}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H7l-4 2v-6a8.5 8.5 0 1 1 18-4.5Z" /></svg><span>{commentCount ?? '—'}</span></Link>}
+        </div>
       </div>
       {item.category !== 'muzik' && <div className="item-actions">
         {isOwner ? (
