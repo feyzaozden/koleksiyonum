@@ -18,12 +18,24 @@ export function createMusicHandler({ env = process.env, fetchImpl = fetch } = {}
     const hit = cache.get(path)
     if (hit && hit.until > Date.now()) return hit.value
     const work = queue.then(async () => {
-      const delay = 1100 - (Date.now() - lastRequest)
-      if (delay > 0) await new Promise(resolve => setTimeout(resolve, delay))
-      lastRequest = Date.now()
-      const response = await fetchImpl('https://musicbrainz.org/ws/2/' + path, {
-        headers: { 'User-Agent': 'Koleksiyonum/1.0 (https://koleksiyonum.com.tr)', Accept: 'application/json' }, signal: AbortSignal.timeout(10000),
-      })
+      // Recheck after waiting: identical queued searches may already be cached.
+      const queuedHit = cache.get(path)
+      if (queuedHit && queuedHit.until > Date.now()) return queuedHit.value
+      let response
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const delay = Math.max(1100 - (Date.now() - lastRequest), attempt ? 2000 : 0)
+        if (delay > 0) await new Promise(resolve => setTimeout(resolve, delay))
+        lastRequest = Date.now()
+        response = await fetchImpl('https://musicbrainz.org/ws/2/' + path, {
+          headers: { 'User-Agent': 'Koleksiyonum/1.0 (https://koleksiyonum.com.tr)', Accept: 'application/json' }, signal: AbortSignal.timeout(8000),
+        })
+        if (![429, 502, 503, 504].includes(response.status) || attempt === 1) break
+        const retryAfter = response.headers.get('retry-after')
+        const retrySeconds = retryAfter == null ? 0 : /^\d+$/.test(retryAfter) ? Number(retryAfter) : (Date.parse(retryAfter) - Date.now()) / 1000
+        // Respect longer provider cooldowns instead of retrying prematurely.
+        if (retrySeconds > 2) break
+        await response.body?.cancel()
+      }
       if (!response.ok) throw new Error('Müzik kataloğuna şu anda ulaşılamıyor. Biraz sonra tekrar dene.')
       const value = await response.json()
       if (cache.size >= 100) cache.delete(cache.keys().next().value)

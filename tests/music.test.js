@@ -5,6 +5,27 @@ import { createMusicHandler } from '../server/music.js'
 const recording = '11111111-1111-4111-8111-111111111111'
 const release = '22222222-2222-4222-8222-222222222222'
 const env = { VITE_SUPABASE_URL: 'https://test.supabase.co', VITE_SUPABASE_ANON_KEY: 'anon', SUPABASE_SECRET_KEY: 'sb_secret_test', YOUTUBE_API_KEY: 'yt-secret' }
+test('temporary catalog failure retries once and concurrent identical searches share cached result', async () => {
+  let calls = 0
+  const handler = createMusicHandler({ env, fetchImpl: async url => {
+    if (String(url).includes('/auth/')) return Response.json({ id: 'owner' })
+    calls++
+    return calls === 1 ? Response.json({}, { status: 503 }) : Response.json({ recordings: [] })
+  } })
+  const results = await Promise.all([call(handler, 'GET', null, '/api/music?q=Song'), call(handler, 'GET', null, '/api/music?q=Song')])
+  assert.deepEqual(results.map(r => r.statusCode), [200, 200])
+  assert.equal(calls, 2)
+})
+test('long provider cooldown does not cause an early retry', async () => {
+  let calls = 0
+  const handler = createMusicHandler({ env, fetchImpl: async url => {
+    if (String(url).includes('/auth/')) return Response.json({ id: 'owner' })
+    calls++
+    return Response.json({}, { status: 429, headers: { 'Retry-After': '60' } })
+  } })
+  assert.equal((await call(handler, 'GET', null, '/api/music?q=Song')).statusCode, 503)
+  assert.equal(calls, 1)
+})
 async function call(handler, method, body, url = '/api/music', authorization = 'Bearer session') {
   const res = { statusCode: 0, setHeader() {}, end(value) { this.body = JSON.parse(value) } }
   await handler({ method, body, url, headers: { authorization } }, res)
