@@ -97,7 +97,7 @@ export default function MusicCollection({ ownerId, allSongs, gridProps }) {
       <div className="music-collection-navigation" role="group" aria-label="Müzik listeleri">
         <button type="button" className={'filter-btn' + (!playlist ? ' active' : '')} aria-pressed={!playlist} onClick={() => { setSelected('all'); setEditing(false) }}>{isOwner ? 'Listem' : 'Listesi'} ({allSongs.length})</button>
         <select className={'sort-select music-playlist-select' + (playlist ? ' selected' : '')} aria-label={isOwner ? 'Çalma listelerim' : 'Çalma listeleri'} value={playlist?.id ?? ''} onChange={e => { setSelected(e.target.value); setEditing(false) }}>
-          <option value="" disabled>{isOwner ? 'Çalma listelerim' : 'Çalma listeleri'}</option>
+          <option value="" disabled hidden>{isOwner ? 'Çalma listelerim' : 'Çalma listeleri'}</option>
           {!playlists.length && <option disabled>Henüz çalma listesi yok</option>}
           {playlists.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>

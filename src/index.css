@@ -646,7 +646,8 @@ body { background:radial-gradient(ellipse at 0 0, #dedfd8 0, transparent 55%), r
 }
 .music-collection-controls { margin:0 0 16px; }
 .music-collection-navigation { display:flex; align-items:stretch; gap:8px; margin-bottom:12px; }
-.music-collection-navigation > :is(button,select) { flex:1 1 0; min-width:0; max-width:none; min-height:44px; border-radius:var(--radius-xs); padding:10px 14px; font:600 .84rem/1.4 'Inter',sans-serif; }
+.music-collection-navigation > :is(button,select) { flex:1 1 0; min-width:0; max-width:none; min-height:44px; border-radius:var(--radius-xs); padding:10px 14px; font:600 1rem/1.5 'Inter',sans-serif; }
+.music-collection-navigation .music-playlist-select option { font-family:'Inter',sans-serif; font-size:1rem; font-weight:500; color:var(--text); background:var(--surface); }
 .music-collection-navigation > .selected { background:var(--active-pale); border-color:var(--active); color:var(--active); }
 .music-collection-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
 .music-collection-toolbar > .sort-select, .music-collection-toolbar > .filter-btn { min-height:40px; border-radius:var(--radius-xs); }
