@@ -19,14 +19,14 @@ function PlaylistEditor({ playlist, songs, members, onToggle, onRename, onClose 
     setBusy(true); setError('')
     try { await operation() } catch (err) { setError(err.message) } finally { setBusy(false) }
   }
-  return <dialog className="add-item-dialog" ref={dialog} aria-label="Çalma listesini düzenle" onCancel={e => { e.preventDefault(); if (!busy) onClose() }}>
+  return <dialog className="add-item-dialog music-editor" ref={dialog} aria-label="Çalma listesini düzenle" onCancel={e => { e.preventDefault(); if (!busy) onClose() }}>
     <div className="add-item-dialog-heading"><h2>Çalma listesini düzenle</h2><button disabled={busy} onClick={onClose} aria-label="Kapat">×</button></div>
     <form className="music-search-bar" onSubmit={e => { e.preventDefault(); run(() => onRename(name.trim())) }}><input aria-label="Liste adı" maxLength={100} value={name} onChange={e => setName(e.target.value)} /><button className="btn-save" disabled={busy || !name.trim()}>Adı kaydet</button></form>
     <p>Şarkılarım’dan bu listeye eklemek istediğin şarkıları seç.</p>
     <div className="playlist-song-picker">{songs.map(song => <label key={song.id}><input type="checkbox" disabled={busy} checked={members.has(song.id)} onChange={() => run(() => onToggle(song.id))} /><span>{song.title}<small>{song.creator}</small></span></label>)}</div>
     {!songs.length && <p>Önce Şarkılarım’a bir şarkı ekle.</p>}
     {error && <p className="auth-error" role="alert">{error}</p>}
-    <button type="button" className="btn-save" disabled={busy} onClick={onClose}>Tamam</button>
+    <div className="music-editor-footer"><button type="button" className="btn-save" disabled={busy} onClick={onClose}>Tamam</button></div>
   </dialog>
 }
 
@@ -93,18 +93,29 @@ export default function MusicCollection({ ownerId, allSongs, gridProps }) {
     setBusy(false)
   }
   return <>
-    <section className="music-library" aria-label="Çalma listeleri">
-      <div className="music-list-tabs"><button className={!playlist ? 'selected' : ''} onClick={() => setSelected('all')}>{isOwner ? 'Şarkılarım' : 'Şarkılar'} ({allSongs.length})</button>
-        {playlists.map(p => <button key={p.id} className={playlist?.id === p.id ? 'selected' : ''} onClick={() => { setSelected(p.id); setEditing(false) }}>{p.name}</button>)}
-        {isOwner && <button onClick={() => setCreating(v => !v)}>+ Çalma listesi</button>}
+    <section className="music-collection-controls" aria-label="Çalma listeleri">
+      <div className="music-collection-navigation" role="group" aria-label="Müzik listeleri">
+        <button type="button" className={'filter-btn' + (!playlist ? ' active' : '')} aria-pressed={!playlist} onClick={() => { setSelected('all'); setEditing(false) }}>{isOwner ? 'Listem' : 'Listesi'} ({allSongs.length})</button>
+        <select className={'sort-select music-playlist-select' + (playlist ? ' selected' : '')} aria-label={isOwner ? 'Çalma listelerim' : 'Çalma listeleri'} value={playlist?.id ?? ''} onChange={e => { setSelected(e.target.value); setEditing(false) }}>
+          <option value="" disabled>{isOwner ? 'Çalma listelerim' : 'Çalma listeleri'}</option>
+          {!playlists.length && <option disabled>Henüz çalma listesi yok</option>}
+          {playlists.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+      </div>
+      <div className="music-collection-toolbar">
+        <button className="filter-btn" disabled={!sections[0]?.items.length} onClick={() => setPlaying(sections[0].items)}>▷ Listeyi dinle</button>
+        {isOwner && <button className="filter-btn" aria-expanded={creating} onClick={() => setCreating(v => !v)}>{creating ? 'Vazgeç' : '+ Çalma listesi'}</button>}
+        {playlist && isOwner && <details className="music-playlist-menu" key={playlist.id}>
+          <summary aria-label="Çalma listesi işlemleri">⋯</summary>
+          <div className="item-overflow-panel">
+            <button type="button" className="edit" onClick={e => { e.currentTarget.closest('details').open = false; setEditing(true) }}>Listeyi düzenle</button>
+            <button type="button" className="delete" disabled={busy} onClick={e => { e.currentTarget.closest('details').open = false; remove() }}>Listeyi sil</button>
+          </div>
+        </details>}
       </div>
       {creating && <form className="music-search-bar" onSubmit={create}><input aria-label="Yeni çalma listesinin adı" placeholder="Liste adı" maxLength={100} value={name} onChange={e => setName(e.target.value)} /><button className="btn-save" disabled={busy || !name.trim()}>Oluştur</button></form>}
       {loading && <p role="status">Çalma listeleri yükleniyor…</p>}
       {error && <p className="auth-error" role="alert">{error} <button onClick={refresh}>Tekrar dene</button></p>}
-      <div className="music-list-actions">
-        <button className="btn-cancel" disabled={!sections[0]?.items.length} onClick={() => setPlaying(sections[0].items)}>▷ {playlist ? 'Listeyi dinle' : 'Şarkıları dinle'}</button>
-        {playlist && isOwner && <><button className="btn-cancel" onClick={() => setEditing(true)}>Şarkı ekle / listeyi düzenle</button><button className="btn-cancel" disabled={busy} onClick={remove}>Listeyi sil</button></>}
-      </div>
     </section>
     {playlist && !sections[0]?.items.length ? <p>Bu görünümde şarkı yok. {isOwner ? 'Listeyi düzenleyerek Şarkılarım’dan şarkı ekleyebilirsin.' : ''}</p> : <ItemsGrid {...gridProps} sections={sections} />}
     {editing && playlist && <PlaylistEditor key={playlist.id} playlist={playlist} songs={allSongs} members={memberIds} onToggle={toggle} onRename={rename} onClose={() => setEditing(false)} />}
