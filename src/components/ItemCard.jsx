@@ -1,4 +1,4 @@
-import ItemProgress from './ItemProgress'
+import ItemProgress, { ProgressDialog } from './ItemProgress'
 import ItemCover from './ItemCover'
 import ItemNote from './ItemNote'
 import MusicPlayer from './MusicPlayer'
@@ -14,6 +14,7 @@ import { useFriends } from '../context/FriendsContext'
 export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, onStatusChange, onEdit, onDelete, onProgress, reactions, commentCount, onAddToPlaylist }) {
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [progressMode, setProgressMode] = useState(null)
   const [playing, setPlaying] = useState(false)
   const [savedVideo, setSavedVideo] = useState(null)
   const menu = useRef(null)
@@ -45,6 +46,11 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
       <div className="item-overflow" ref={menu} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setMenuOpen(false) }}>
         <button ref={menuButton} type="button" className="item-overflow-toggle" aria-label={`${item.title} işlemleri`} aria-expanded={menuOpen} aria-controls={menuId} onClick={() => setMenuOpen(value => !value)}>⋯</button>
         {menuOpen && <div className="item-overflow-panel" id={menuId}>
+          {isOwner && item.category !== 'muzik' && item.status !== 'bitti' && <>
+            <button type="button" onClick={() => { setMenuOpen(false); setProgressMode('edit') }}>İlerlemeyi güncelle</button>
+            {item.category === 'dizi' && item.progress?.season && !(item.progress.seasons && item.progress.season >= item.progress.seasons) && <button type="button" onClick={() => { setMenuOpen(false); setProgressMode('edit') }}>Sonraki sezona geç</button>}
+            <button type="button" onClick={() => { setMenuOpen(false); setProgressMode('finish') }}>{item.category === 'dizi' ? 'Diziyi bitirdim' : 'Bitirdim'}</button>
+          </>}
           {isOwner && item.category === 'muzik' && onAddToPlaylist && <button type="button" onClick={() => { setMenuOpen(false); onAddToPlaylist(item) }}>Çalma listesine ekle</button>}
           {item.category !== 'muzik' && <a href={imdbUrl} target="_blank" rel="noreferrer" className="imdb" onClick={() => setMenuOpen(false)}>IMDb’de ara</a>}
           <a href={ytUrl} target="_blank" rel="noreferrer" className="yt" onClick={() => setMenuOpen(false)}>▷ YouTube’da ara</a>
@@ -54,6 +60,7 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
         </div>}
       </div>
       <ItemCover item={displayedItem} />
+      {progressMode && <ProgressDialog item={item} finish={progressMode === 'finish'} onSave={onProgress} onClose={() => setProgressMode(null)} />}
       {playing && <MusicPlayer items={[savedVideo ? { ...item, youtube_id: savedVideo } : item]} onVideoSaved={(_id, video) => setSavedVideo(video)} onClose={() => setPlaying(false)} />}
       {picker && <PosterPicker item={displayedItem} onClose={() => setPicker(false)} onSaved={saved => { setLinked(saved); setPicker(false) }} />}
       <div className="item-body">

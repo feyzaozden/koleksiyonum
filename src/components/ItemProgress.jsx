@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { progressError, progressPatch, progressText } from '../utils/progress'
+import { progressError, progressPatch } from '../utils/progress'
 import { datesFromForm, displayDate, localToday } from '../utils/itemDates'
 import DateField from './DateField'
 
-function ProgressDialog({ item, finish, onClose, onSave }) {
+export function ProgressDialog({ item, finish, onClose, onSave }) {
   const dialog = useRef(null)
   const locked = useRef(false)
   const [busy, setBusy] = useState(false)
@@ -88,6 +88,8 @@ export default function ItemProgress({ item, isOwner, onSave }) {
   const p = item.progress || {}
   const series = item.category === 'dizi'
   const lastEpisode = p.episodes?.[p.season] != null && p.position >= p.episodes[p.season]
+  const summary = series ? `${p.season || 1}. sezon · ${p.position}. bölüm`
+    : item.category === 'kitap' ? `${p.position}${p.total ? ` / ${p.total}` : ''} sayfa` : `${p.position}. dakika`
   useEffect(() => {
     if (!undo) return
     const timer = setTimeout(() => setUndo(null), 10000)
@@ -104,15 +106,15 @@ export default function ItemProgress({ item, isOwner, onSave }) {
     finally { locked.current = false; setBusy(false) }
   }
   return <div className="item-progress">
-    {p.position != null && <p>{progressText(item)}</p>}
+    <div className="progress-summary-row">
+    {p.position != null && !(item.category === 'film' && item.status === 'bitti') && <p>{summary}</p>}
+    {isOwner && item.status !== 'bitti' && <button type="button" className="progress-primary" disabled={busy} onClick={() => {
+      if (series && p.position != null && !lastEpisode) advance()
+      else { setUndo(null); setMode('edit') }
+    }}>{p.position == null ? 'İlerleme ekle' : series && !lastEpisode ? 'Bölümü bitirdim' : 'Güncelle'}</button>}
+    </div>
     {item.status !== 'bitti' && !series && p.position != null && p.total > 0 && <progress value={p.position} max={p.total} aria-label={`${item.title} ilerlemesi`} />}
     {isOwner && item.status !== 'bitti' && <div className="progress-actions">
-      <button type="button" disabled={busy} onClick={() => { setUndo(null); setMode('edit') }}>İlerlemeyi güncelle</button>
-      {item.status !== 'bitti' && <>
-        {series && p.position != null && !lastEpisode && <button type="button" disabled={busy} onClick={() => advance()}>Bölümü bitirdim</button>}
-        {series && lastEpisode && !(p.seasons && p.season >= p.seasons) && <button type="button" disabled={busy} onClick={() => { setUndo(null); setMode('edit') }}>Sonraki sezona geç</button>}
-        <button type="button" disabled={busy} onClick={() => { setUndo(null); setMode('finish') }}>{series ? 'Diziyi bitirdim' : 'Bitirdim'}</button>
-      </>}
       {undo && <span role="status">Bölüm güncellendi. <button type="button" disabled={busy} onClick={() => advance(true)}>Geri al</button></span>}
     </div>}
     {error && <p className="auth-error" role="alert">{error}</p>}
