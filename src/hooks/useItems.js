@@ -88,5 +88,10 @@ export function useItems(scope = 'circle', ownerId = null) {
     setItems((prev) => prev.filter((i) => i.id !== id))
   }
 
-  return { items: items.filter((item) => selectedIds.includes(item.user_id)), loading, error, refresh, addItem, updateItem, deleteItem }
+  async function setFeatured(id, featured) {
+    const { data, error } = await supabase.rpc('set_item_featured', { target_item: id, featured })
+    if (error) throw new Error(error.code === 'PGRST202' ? 'Öne çıkanlar için SQL kurulumunu tamamla.' : error.message)
+    setItems(prev => prev.map(item => item.id === id ? data : item))
+  }
+  return { items: items.filter((item) => selectedIds.includes(item.user_id)), loading, error, refresh, addItem, updateItem, deleteItem, setFeatured }
 }

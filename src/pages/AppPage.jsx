@@ -30,7 +30,7 @@ export default function AppPage() {
   const location = useLocation()
   const handledNotification = useRef(null)
   const [highlight, setHighlight] = useState(null)
-  const { items, loading, error: loadError, refresh, addItem, updateItem, deleteItem } = useItems('mine')
+  const { items, loading, error: loadError, refresh, addItem, updateItem, deleteItem, setFeatured } = useItems('mine')
   const [error, showError] = useErrorToast()
 
   const [activeTab, setActiveTab] = usePageState('activeTab', 'kitap')
@@ -130,7 +130,7 @@ export default function AppPage() {
       <section className="profile-hero main">
         <ProfileAvatar profile={profile} />
         <div><h1>{profile?.display_name || 'Koleksiyonum'}</h1>{profile?.username && <span className="profile-username">@{profile.username}</span>}<p>{profile?.bio || 'Kitaplarım, filmlerim ve dizilerim.'}</p>
-        <Link to="/profile">Profilimi düzenle</Link></div>
+        <div className="profile-owner-links"><Link to={`/people/${user.id}`}>Profilimi görüntüle</Link><Link to="/profile">Profilimi düzenle</Link></div></div>
       </section>
       <div className="tabs">
         {Object.entries(TABS).map(([key, t]) => (
@@ -182,6 +182,7 @@ export default function AppPage() {
         />
 
         <ItemsGrid
+          onFeature={setFeatured}
           musicOwner={activeTab === 'muzik' ? user.id : null}
           allSongs={statsItems}
           sections={sections}

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useFriends } from '../context/FriendsContext'
 
-export default function FriendActions({ personId, isPublic = false }) {
+export default function FriendActions({ personId, isPublic = false, compact = false, onComplete }) {
   const { user } = useAuth()
   const friends = useFriends()
   const [busy, setBusy] = useState(false)
@@ -13,13 +13,13 @@ export default function FriendActions({ personId, isPublic = false }) {
   async function perform(action) {
     if (busy) return
     setBusy(true); setError('')
-    try { await action(); setConfirming(false) }
+    try { await action(); setConfirming(false); onComplete?.() }
     catch (err) { setError(err.message || 'İşlem tamamlanamadı. Tekrar dene.') }
     finally { setBusy(false) }
   }
   const disabled = busy || friends.loading || !!friends.error
   return (
-    <div className="friend-actions">
+    <div className={'friend-actions' + (compact ? ' friend-actions-compact' : '')}>
       {relation?.status === 'accepted' ? (
         confirming ? <>
           <span>Arkadaşlığı kaldırınca gizli hesapların içeriklerine erişim kapanır. Açık hesaplar görünmeye devam eder.</span>

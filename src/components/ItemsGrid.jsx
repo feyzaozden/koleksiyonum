@@ -1,4 +1,5 @@
 import ItemCard from './ItemCard'
+import ProfileItemCard from './ProfileItemCard'
 import { useItemReactions } from '../hooks/useItemReactions'
 import { useCommentCounts } from '../hooks/useCommentCounts'
 
@@ -9,10 +10,15 @@ const EMPTY_MESSAGES = {
   bitti: () => ({ icon: '✅', h: 'Tamamlanan yok', p: 'Henüz tamamladığın bir şey yok.' }),
 }
 
-export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, search = '', onClearFilters, onStatusChange, onEdit, onDelete, onProgress, onAddToPlaylist }) {
+export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, search = '', onClearFilters, onStatusChange, onEdit, onDelete, onProgress, onAddToPlaylist, onFeature, compact = false }) {
   const showSectionHeaders = sections.length > 1
   const reactions = useItemReactions(sections.flatMap((section) => section.items.map((item) => item.id)))
   const commentCounts = useCommentCounts(sections.flatMap(section => section.items.map(item => item.id)))
+  if (compact) {
+    const items = sections.flatMap(section => section.items)
+    return items.length ? <div className="profile-item-grid">{items.map(item => <ProfileItemCard key={item.id} item={item} reactions={reactions} commentCount={commentCounts[item.id]} />)}</div>
+      : <p className="profile-empty">{search || activeFilter !== 'tumu' ? 'Bu filtrelere uygun içerik bulunamadı.' : 'Henüz içerik yok.'}</p>
+  }
 
   if ((search.trim() || activeFilter !== 'tumu') && sections.every((section) => section.items.length === 0)) {
     return (
@@ -58,6 +64,7 @@ export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, se
             onDelete={onDelete}
             onProgress={onProgress}
             onAddToPlaylist={onAddToPlaylist}
+            onFeature={onFeature}
           />
         ))}
       </div>
@@ -93,6 +100,7 @@ export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, se
                 onDelete={onDelete}
             onProgress={onProgress}
             onAddToPlaylist={onAddToPlaylist}
+            onFeature={onFeature}
               />
             ))
           )}

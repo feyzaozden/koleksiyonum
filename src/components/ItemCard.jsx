@@ -11,9 +11,11 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useFriends } from '../context/FriendsContext'
 
-export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, onStatusChange, onEdit, onDelete, onProgress, reactions, commentCount, onAddToPlaylist }) {
+export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, onStatusChange, onEdit, onDelete, onProgress, reactions, commentCount, onAddToPlaylist, onFeature, returnAnchorId }) {
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [featureBusy, setFeatureBusy] = useState(false)
+  const [featureError, setFeatureError] = useState('')
   const [progressMode, setProgressMode] = useState(null)
   const [playing, setPlaying] = useState(false)
   const [savedVideo, setSavedVideo] = useState(null)
@@ -46,6 +48,13 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
       <div className="item-overflow" ref={menu} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setMenuOpen(false) }}>
         <button ref={menuButton} type="button" className="item-overflow-toggle" aria-label={`${item.title} işlemleri`} aria-expanded={menuOpen} aria-controls={menuId} onClick={() => setMenuOpen(value => !value)}>⋯</button>
         {menuOpen && <div className="item-overflow-panel" id={menuId}>
+          {isOwner && onFeature && <button type="button" disabled={featureBusy} onClick={async () => {
+            if (featureBusy) return
+            setFeatureBusy(true); setFeatureError('')
+            try { await onFeature(item.id, !item.featured_at); setMenuOpen(false) }
+            catch (err) { setFeatureError(err.message) }
+            finally { setFeatureBusy(false) }
+          }}>{featureBusy ? 'Kaydediliyor…' : item.featured_at ? 'Öne çıkanlardan kaldır' : 'Öne çıkar'}</button>}
           {isOwner && item.category !== 'muzik' && item.status !== 'bitti' && <>
             <button type="button" onClick={() => { setMenuOpen(false); setProgressMode('edit') }}>İlerlemeyi güncelle</button>
             {item.category === 'dizi' && item.progress?.season && !(item.progress.seasons && item.progress.season >= item.progress.seasons) && <button type="button" onClick={() => { setMenuOpen(false); setProgressMode('edit') }}>Sonraki sezona geç</button>}
@@ -64,6 +73,7 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
       {playing && <MusicPlayer items={[savedVideo ? { ...item, youtube_id: savedVideo } : item]} onVideoSaved={(_id, video) => setSavedVideo(video)} onClose={() => setPlaying(false)} />}
       {picker && <PosterPicker item={displayedItem} onClose={() => setPicker(false)} onSaved={saved => { setLinked(saved); setPicker(false) }} />}
       <div className="item-body">
+        {featureError && <p className="auth-error" role="alert">{featureError}</p>}
         <div className="item-heading">
           <div className="item-title">{item.title}</div>
           {meta && <div className="item-meta">{meta}</div>}
@@ -86,7 +96,8 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
             const key = location.state?.restoreKey || location.key
             try {
               sessionStorage.setItem(`page-scroll:${user.id}:${key}`, String(window.scrollY))
-              sessionStorage.setItem(`page-anchor:${user.id}:${key}`, JSON.stringify({ id: `item-${item.id}`, offset: document.getElementById(`item-${item.id}`)?.getBoundingClientRect().top || 0 }))
+              const anchorId = returnAnchorId || `item-${item.id}`
+              sessionStorage.setItem(`page-anchor:${user.id}:${key}`, JSON.stringify({ id: anchorId, offset: document.getElementById(anchorId)?.getBoundingClientRect().top || 0 }))
             } catch { /* optional storage */ }
           }}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H7l-4 2v-6a8.5 8.5 0 1 1 18-4.5Z" /></svg><span>{commentCount ?? '—'}</span></Link>}
         </div>
