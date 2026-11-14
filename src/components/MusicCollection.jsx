@@ -4,6 +4,7 @@ import { usePageState } from '../hooks/usePageState'
 import ItemsGrid from './ItemsGrid'
 import MusicPlayer from './MusicPlayer'
 import AddToPlaylist from './AddToPlaylist'
+import DeleteConfirm from './DeleteConfirm'
 import PlaylistAppearance, { PlaylistCover } from './PlaylistAppearance'
 
 function PlaylistEditor({ playlist, songs, members, onToggle, onRename, onClose }) {
@@ -37,6 +38,7 @@ export default function MusicCollection({ ownerId, allSongs, gridProps, filters 
   const [playlists, setPlaylists] = useState([])
   const [library, setLibrary] = useState({})
   const [appearance, setAppearance] = useState(false)
+  const [deletingPlaylist, setDeletingPlaylist] = useState(null)
   const [memberships, setMemberships] = useState([])
   const [selected, setSelected] = usePageState(`playlist-cards:${ownerId}`, null)
   const [name, setName] = useState('')
@@ -100,13 +102,12 @@ export default function MusicCollection({ ownerId, allSongs, gridProps, filters 
     if (result.error && result.error.code !== '23505') throw new Error('Şarkı listeye eklenemedi. Tekrar dene.')
     setMemberships(prev => prev.some(m => m.playlist_id === playlistId && m.item_id === itemId) ? prev : [...prev, { playlist_id: playlistId, item_id: itemId }])
   }
-  async function remove() {
-    if (!window.confirm(`“${playlist.name}” listesi silinsin mi? Şarkılar Şarkılarım’da kalacak.`)) return
-    setBusy(true); setError('')
-    const result = await supabase.from('music_playlists').delete().eq('id', playlist.id)
-    if (result.error) setError('Liste silinemedi.')
-    else { setPlaylists(prev => prev.filter(p => p.id !== playlist.id)); setSelected(null) }
-    setBusy(false)
+  async function remove(playlistId) {
+    const result = await supabase.from('music_playlists').delete().eq('id', playlistId).eq('user_id', ownerId).select('id').single()
+    if (result.error) throw new Error('Çalma listesi silinemedi. Tekrar dene.')
+    setPlaylists(prev => prev.filter(p => p.id !== playlistId))
+    setMemberships(prev => prev.filter(m => m.playlist_id !== playlistId))
+    setSelected(null)
   }
   return <>
     <section className="music-collection-controls" aria-label="Çalma listeleri">
@@ -119,7 +120,7 @@ export default function MusicCollection({ ownerId, allSongs, gridProps, filters 
           <summary aria-label="Çalma listesi işlemleri">⋯</summary>
           <div className="item-overflow-panel">
             <button type="button" className="edit" onClick={e => { e.currentTarget.closest('details').open = false; setEditing(true) }}>Listeyi düzenle</button>
-            <button type="button" className="delete" disabled={busy} onClick={e => { e.currentTarget.closest('details').open = false; remove() }}>Listeyi sil</button>
+            <button type="button" className="delete" disabled={busy} onClick={e => { e.currentTarget.closest('details').open = false; setDeletingPlaylist(playlist) }}>Listeyi sil</button>
           </div>
         </details>}
       </div>
@@ -135,6 +136,7 @@ export default function MusicCollection({ ownerId, allSongs, gridProps, filters 
       </button>)}
     </div>}
     {opened && filters}
+    {deletingPlaylist && <DeleteConfirm playlist item={deletingPlaylist} onCancel={() => setDeletingPlaylist(null)} onConfirm={remove} />}
     {opened && (playlist && !sections[0]?.items.length ? <p>{memberIds.size ? 'Aramana uygun şarkı bulunamadı.' : 'Bu çalma listesi henüz boş.'} {isOwner && !memberIds.size && <>Listem’deki bir şarkının ⋯ menüsünden “Çalma listesine ekle”yi seçebilirsin.</>}</p> : <ItemsGrid {...gridProps} sections={sections} onAddToPlaylist={setAddingSong} />)}
     {appearance && opened && <PlaylistAppearance collection={currentCollection} ownerId={ownerId} onClose={() => setAppearance(false)} onSave={async values => {
       const result = playlist
