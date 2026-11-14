@@ -46,8 +46,8 @@ export default function PersonPage() {
             {!collection.loading && !featured.length && <p className="profile-empty">Koleksiyonu görmek için bir kategori seç.</p>}
           </> : <section className="profile-category-content" aria-label={`${tab.label} koleksiyonu`}>
             <div className="profile-category-heading"><h2>{tab.label}</h2><button className="btn-cancel" type="button" onClick={() => setCategory(null)}>Profile dön</button></div>
-            <FilterBar category={category} search={search} onSearchChange={setSearch} statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} sort={sort} onSortChange={setSort} />
-            <ItemsGrid compact musicOwner={category === 'muzik' ? id : null} allSongs={collection.items.filter(i => i.category === 'muzik')} sections={section(filterAndSortItems(collection.items, { category, search, statusFilter, sort }))} tabEmoji={tab.emoji} activeFilter={statusFilter} search={search} onClearFilters={() => { setSearch(''); setStatusFilter('tumu') }} labels={tab.statusLabels} />
+            {category !== 'muzik' && <FilterBar category={category} search={search} onSearchChange={setSearch} statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} sort={sort} onSortChange={setSort} />}
+            <ItemsGrid compact musicFilters={<FilterBar category={category} search={search} onSearchChange={setSearch} statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} sort={sort} onSortChange={setSort} />} musicOwner={category === 'muzik' ? id : null} allSongs={collection.items.filter(i => i.category === 'muzik')} sections={section(filterAndSortItems(collection.items, { category, search, statusFilter, sort }))} tabEmoji={tab.emoji} activeFilter={statusFilter} search={search} onClearFilters={() => { setSearch(''); setStatusFilter('tumu') }} labels={tab.statusLabels} />
           </section>}
         </>}
       </>}

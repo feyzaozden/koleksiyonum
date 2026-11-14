@@ -4,6 +4,7 @@ import { usePageState } from '../hooks/usePageState'
 import ItemsGrid from './ItemsGrid'
 import MusicPlayer from './MusicPlayer'
 import AddToPlaylist from './AddToPlaylist'
+import PlaylistAppearance, { PlaylistCover } from './PlaylistAppearance'
 
 function PlaylistEditor({ playlist, songs, members, onToggle, onRename, onClose }) {
   const dialog = useRef(null)
@@ -31,11 +32,13 @@ function PlaylistEditor({ playlist, songs, members, onToggle, onRename, onClose 
   </dialog>
 }
 
-export default function MusicCollection({ ownerId, allSongs, gridProps }) {
+export default function MusicCollection({ ownerId, allSongs, gridProps, filters }) {
   const isOwner = gridProps.sections[0]?.isOwner
   const [playlists, setPlaylists] = useState([])
+  const [library, setLibrary] = useState({})
+  const [appearance, setAppearance] = useState(false)
   const [memberships, setMemberships] = useState([])
-  const [selected, setSelected] = usePageState(`playlist:${ownerId}`, 'all')
+  const [selected, setSelected] = usePageState(`playlist-cards:${ownerId}`, null)
   const [name, setName] = useState('')
   const [creating, setCreating] = useState(false)
   const [editing, setEditing] = useState(false)
@@ -52,6 +55,10 @@ export default function MusicCollection({ ownerId, allSongs, gridProps }) {
     const result = await supabase.from('music_playlists').select('*').eq('user_id', ownerId).order('created_at')
     if (current !== version.current) return
     if (result.error) { setError('Çalma listeleri yüklenemedi. Müzik SQL kurulumunu kontrol et.'); setLoading(false); return }
+    const profile = await supabase.from('profiles').select('music_description,music_cover_path').eq('id', ownerId).single()
+    if (current !== version.current) return
+    if (profile.error) setError('Liste kapakları yüklenemedi. Yeni liste kapakları SQL dosyasını çalıştırmalısın.')
+    else setLibrary({ description: profile.data.music_description, cover_path: profile.data.music_cover_path })
     const ids = result.data.map(p => p.id)
     const members = ids.length ? await supabase.from('music_playlist_items').select('*').in('playlist_id', ids).order('added_at') : { data: [] }
     if (current !== version.current) return
@@ -61,6 +68,8 @@ export default function MusicCollection({ ownerId, allSongs, gridProps }) {
   }, [ownerId])
   useEffect(() => { refresh(); return () => { version.current++ } }, [refresh])
   const playlist = playlists.find(p => String(p.id) === String(selected))
+  const currentCollection = playlist || { ...library, name: isOwner ? 'Listem' : 'Listesi' }
+  const opened = selected === 'all' || !!playlist
   const memberIds = new Set(memberships.filter(m => String(m.playlist_id) === String(selected)).map(m => m.item_id))
   const sections = gridProps.sections.map(section => ({ ...section, items: playlist ? section.items.filter(i => memberIds.has(i.id)) : section.items }))
   async function create(event) {
@@ -96,21 +105,15 @@ export default function MusicCollection({ ownerId, allSongs, gridProps }) {
     setBusy(true); setError('')
     const result = await supabase.from('music_playlists').delete().eq('id', playlist.id)
     if (result.error) setError('Liste silinemedi.')
-    else { setPlaylists(prev => prev.filter(p => p.id !== playlist.id)); setSelected('all') }
+    else { setPlaylists(prev => prev.filter(p => p.id !== playlist.id)); setSelected(null) }
     setBusy(false)
   }
   return <>
     <section className="music-collection-controls" aria-label="Çalma listeleri">
-      <div className="music-collection-navigation" role="group" aria-label="Müzik listeleri">
-        <button type="button" className={'filter-btn' + (!playlist ? ' active' : '')} aria-pressed={!playlist} onClick={() => { setSelected('all'); setEditing(false) }}>{isOwner ? 'Listem' : 'Listesi'} ({allSongs.length})</button>
-        <select className={'sort-select music-playlist-select' + (playlist ? ' selected' : '')} aria-label={isOwner ? 'Çalma listelerim' : 'Çalma listeleri'} value={playlist?.id ?? ''} onChange={e => { setSelected(e.target.value); setEditing(false) }}>
-          <option value="" disabled hidden>{isOwner ? 'Çalma listelerim' : 'Çalma listeleri'}</option>
-          {!playlists.length && <option disabled>Henüz çalma listesi yok</option>}
-          {playlists.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-        </select>
-      </div>
+      {opened && <div className="playlist-open-heading"><button type="button" className="btn-cancel" onClick={() => { setSelected(null); setEditing(false) }}>← Çalma listeleri</button><h2>{currentCollection.name}</h2>{currentCollection.description && <p>{currentCollection.description}</p>}</div>}
       <div className="music-collection-toolbar">
-        <button className="filter-btn" disabled={!sections[0]?.items.length} onClick={() => setPlaying(sections[0].items)}>▷ Listeyi dinle</button>
+        {opened && <button className="filter-btn" disabled={!sections[0]?.items.length} onClick={() => setPlaying(sections[0].items)}>▷ Listeyi dinle</button>}
+        {opened && isOwner && <button className="filter-btn" onClick={() => setAppearance(true)}>Kapak ve açıklama</button>}
         {isOwner && <button className="filter-btn" aria-expanded={creating} onClick={() => setCreating(v => !v)}>{creating ? 'Vazgeç' : '+ Çalma listesi'}</button>}
         {playlist && isOwner && <details className="music-playlist-menu" key={playlist.id}>
           <summary aria-label="Çalma listesi işlemleri">⋯</summary>
@@ -124,7 +127,23 @@ export default function MusicCollection({ ownerId, allSongs, gridProps }) {
       {loading && <p role="status">Çalma listeleri yükleniyor…</p>}
       {error && <p className="auth-error" role="alert">{error} <button onClick={refresh}>Tekrar dene</button></p>}
     </section>
-    {playlist && !sections[0]?.items.length ? <p>{memberIds.size ? 'Aramana uygun şarkı bulunamadı.' : 'Bu çalma listesi henüz boş.'} {isOwner && !memberIds.size && <>Listem’deki bir şarkının ⋯ menüsünden “Çalma listesine ekle”yi seçebilirsin.</>}</p> : <ItemsGrid {...gridProps} sections={sections} onAddToPlaylist={setAddingSong} />}
+    {!opened && <div className="playlist-card-grid">
+      {[{ ...library, id: 'all', name: isOwner ? 'Listem' : 'Listesi' }, ...playlists].map(p => <button type="button" className="playlist-card" key={p.id} onClick={() => setSelected(p.id)}>
+        <PlaylistCover path={p.cover_path} /><strong>{p.name}</strong>
+        <small>{p.id === 'all' ? allSongs.length : memberships.filter(m => m.playlist_id === p.id).length} şarkı</small>
+        {p.description && <span className="playlist-card-description">{p.description}</span>}
+      </button>)}
+    </div>}
+    {opened && filters}
+    {opened && (playlist && !sections[0]?.items.length ? <p>{memberIds.size ? 'Aramana uygun şarkı bulunamadı.' : 'Bu çalma listesi henüz boş.'} {isOwner && !memberIds.size && <>Listem’deki bir şarkının ⋯ menüsünden “Çalma listesine ekle”yi seçebilirsin.</>}</p> : <ItemsGrid {...gridProps} sections={sections} onAddToPlaylist={setAddingSong} />)}
+    {appearance && opened && <PlaylistAppearance collection={currentCollection} ownerId={ownerId} onClose={() => setAppearance(false)} onSave={async values => {
+      const result = playlist
+        ? await supabase.from('music_playlists').update(values).eq('id', playlist.id).select().single()
+        : await supabase.from('profiles').update({ music_description: values.description, music_cover_path: values.cover_path }).eq('id', ownerId).select('id').single()
+      if (result.error) throw new Error('Liste görünümü kaydedilemedi. SQL kurulumunu ve bağlantını kontrol et.')
+      if (playlist) setPlaylists(prev => prev.map(p => p.id === playlist.id ? result.data : p))
+      else setLibrary(values)
+    }} />}
     {addingSong && <AddToPlaylist song={addingSong} playlists={playlists} memberships={memberships} loading={loading} loadError={error} onRetry={refresh} onAdd={addToPlaylist} onClose={() => setAddingSong(null)} onCreate={() => { setAddingSong(null); setCreating(true) }} />}
     {editing && playlist && <PlaylistEditor key={playlist.id} playlist={playlist} songs={allSongs} members={memberIds} onToggle={toggle} onRename={rename} onClose={() => setEditing(false)} />}
     {playing && <MusicPlayer items={playing.map(song => savedVideos[song.id] ? { ...song, youtube_id: savedVideos[song.id] } : song)} onVideoSaved={(id, video) => setSavedVideos(prev => ({ ...prev, [id]: video }))} onClose={() => setPlaying(null)} />}

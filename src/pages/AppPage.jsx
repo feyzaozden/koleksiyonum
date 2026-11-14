@@ -171,7 +171,7 @@ export default function AppPage() {
         {adding && <AddItemModal key={activeTab} category={activeTab} creatorLabel={tab.creatorLabel} onSubmit={handleAdd} existingItems={statsItems} onClose={() => setAdding(false)} />}
         {loadError && <div className="auth-error" role="alert">Koleksiyon yüklenemedi. <button onClick={refresh}>Tekrar dene</button></div>}
         {loading && <p role="status">Koleksiyon yükleniyor…</p>}
-        <FilterBar
+        {activeTab !== 'muzik' && <FilterBar
           category={activeTab}
           search={search}
           onSearchChange={setSearch}
@@ -179,9 +179,18 @@ export default function AppPage() {
           onStatusFilterChange={setStatusFilter}
           sort={sort}
           onSortChange={setSort}
-        />
+        />}
 
         <ItemsGrid
+          musicFilters={<FilterBar
+          category={activeTab}
+          search={search}
+          onSearchChange={setSearch}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          sort={sort}
+          onSortChange={setSort}
+        />}
           onFeature={setFeatured}
           musicOwner={activeTab === 'muzik' ? user.id : null}
           allSongs={statsItems}
