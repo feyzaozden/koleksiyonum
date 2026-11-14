@@ -1,5 +1,13 @@
 # Müzik ve çalma listeleri
 
+## YouTube'dan doğrudan şarkı ekleme
+
+Mevcut müzik kurulumu üzerine yalnızca `supabase/migrations/20261114_youtube_music.sql` dosyasını SQL Editor'de çalıştır. Mevcut içeriklere dokunmaz. Yeni API anahtarı gerekmez; mevcut sunucu `YOUTUBE_API_KEY` ayarı kullanılır. Kodun canlıya dağıtılması gerekir.
+
+Yeni ekle ekranında **YouTube’da ara** (varsayılan) veya **Müzik kataloğu** seçilebilir. YouTube araması 15 sonuç getirir; **Daha fazla sonuç** ile devam edilir. YouTube kaydı başlık, kanal ve video küçük resmiyle eklenir; albüm ve çıkış yılı tahmin edilmez. Seçilen video dinleme için de kaydedilir. İçerik mevcut yorum, tepki, çalma listesi ve öne çıkarma yollarını kullanır.
+
+Aynı YouTube video kimliği aynı hesapta tekrar eklenemez. MusicBrainz kaydı ile farklı YouTube yüklemelerinin aynı eser olduğunu otomatik tespit etmiyoruz. Video yayıncı kısıtı, yaş/ülke kısıtı, silinme veya API kotası nedeniyle erişilemeyebilir; YouTube sitesindeki her sonuç API aramasında çıkacak diye bir garanti yoktur.
+
 ## Kurulum sırası
 
 1. Google Cloud Console (https://console.cloud.google.com/) içinde bir proje oluştur veya mevcut projenı seç.

@@ -76,11 +76,13 @@ export function createMusicHandler({ env = process.env, fetchImpl = fetch } = {}
         const query = (params.get('q') || '').trim()
         if (query.length < 2 || query.length > 100) return reply(400, { error: 'Arama için 2–100 karakter gir.' })
         if (params.get('videos') === '1') {
-          const key = 'yt:' + query
+          const pageToken = params.get('page') || ''
+          if (pageToken.length > 256) return reply(400, { error: 'Geçersiz arama sayfası.' })
+          const key = 'yt:' + JSON.stringify([query, pageToken])
           let data = cache.get(key)
           if (!data || data.until < Date.now()) {
-            const result = await youtube('search', { part: 'snippet', q: query, type: 'video', videoEmbeddable: 'true', videoSyndicated: 'true', maxResults: '5', safeSearch: 'moderate' })
-            data = { until: Date.now() + 300000, value: { results: (result.items || []).filter(v => VIDEO.test(v.id?.videoId)).map(v => ({ id: v.id.videoId, title: v.snippet.title, channel: v.snippet.channelTitle })) } }
+            const result = await youtube('search', { part: 'snippet', q: query, type: 'video', videoEmbeddable: 'true', videoSyndicated: 'true', maxResults: '15', safeSearch: 'moderate', ...(pageToken ? { pageToken } : {}) })
+            data = { until: Date.now() + 300000, value: { nextPage: result.nextPageToken || null, results: (result.items || []).filter(v => VIDEO.test(v.id?.videoId)).map(v => ({ id: v.id.videoId, title: v.snippet.title, channel: v.snippet.channelTitle })) } }
             if (cache.size >= 100) cache.delete(cache.keys().next().value)
             cache.set(key, data)
           }
@@ -109,6 +111,18 @@ export function createMusicHandler({ env = process.env, fetchImpl = fetch } = {}
         const data = await youtube('videos', { part: 'status', id: input.video_id })
         if (!data.items?.[0]?.status?.embeddable) return reply(400, { error: 'Bu video site içinde oynatılamıyor.' })
         saved = await fetchImpl(`${base}/rest/v1/items?id=eq.${input.item_id}&user_id=eq.${user.id}&category=eq.muzik&select=*`, { method: 'PATCH', headers, body: JSON.stringify({ youtube_id: input.video_id }), signal: AbortSignal.timeout(10000) })
+      } else if (input.youtube_source_id != null) {
+        if (!VIDEO.test(input.youtube_source_id) || input.music_recording_id != null) return reply(400, { error: 'Geçersiz YouTube seçimi.' })
+        const data = await youtube('videos', { part: 'snippet,status', id: input.youtube_source_id })
+        const video = data.items?.find(entry => entry.id === input.youtube_source_id)
+        if (!video?.status?.embeddable || video.status.privacyStatus !== 'public' || !video.snippet?.title) return reply(400, { error: 'Bu video eklenemiyor veya site içinde oynatılamıyor. Başka bir sonuç seç.' })
+        // Channel is not necessarily the artist; do not invent album/release metadata.
+        const payload = {
+          user_id: user.id, category: 'muzik', title: video.snippet.title, creator: video.snippet.channelTitle || null,
+          youtube_source_id: video.id, youtube_id: video.id, emoji: '🎵',
+          status: 'bekliyor', note: input.note ?? null, rating: input.rating ?? null,
+        }
+        saved = await fetchImpl(`${base}/rest/v1/items?select=*`, { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(10000) })
       } else {
         if (!UUID.test(input.music_recording_id || '') || (input.music_release_id != null && !UUID.test(input.music_release_id))) return reply(400, { error: 'Aramadan bir şarkı seç.' })
         const recording = await catalog(`recording/${input.music_recording_id}?inc=artist-credits+releases&fmt=json`)

@@ -62,5 +62,15 @@ test('music playlists enforce privacy, ownership, membership and preserve songs 
     await assert.rejects(db.query("update public.items set note='Changed' where id=$1", [legacy.id]), /items_category_check/)
     await db.exec(await readFile(new URL('../supabase/migrations/20261113_music.sql', import.meta.url), 'utf8'))
     assert.equal((await db.query('select * from public.items')).rows.length, 4)
+    const youtubeMigration = await readFile(new URL('../supabase/migrations/20261114_youtube_music.sql', import.meta.url), 'utf8')
+    await db.exec(youtubeMigration)
+    const youtube = (await db.query("insert into public.items(user_id,category,title,youtube_source_id,youtube_id) values($1,'muzik','YouTube song','abcdefghijk','abcdefghijk') returning id", [owner])).rows[0].id
+    await assert.rejects(db.query("insert into public.items(user_id,category,title,youtube_source_id) values($1,'muzik','Another title','abcdefghijk')", [owner]), /unique/)
+    await assert.rejects(db.query("update public.items set youtube_source_id='bbbbbbbbbbb' where id=$1", [youtube]), /değiştirilemez/)
+    await login(owner)
+    await assert.rejects(db.query("insert into public.items(user_id,category,title,youtube_source_id) values($1,'muzik','Forged video','bbbbbbbbbbb')", [owner]), /permission denied/)
+    await db.exec('reset role')
+    await db.exec(youtubeMigration)
+    assert.equal((await db.query('select * from public.items')).rows.length, 5)
   } finally { await db.close() }
 })

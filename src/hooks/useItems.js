@@ -46,7 +46,7 @@ export function useItems(scope = 'circle', ownerId = null) {
     if (yearError) throw new Error(yearError)
     validateItemDates(payload)
     let data
-    if (payload.music_recording_id) {
+    if (payload.music_recording_id || payload.youtube_source_id) {
       data = (await musicApi({}, { method: 'POST', body: JSON.stringify(payload) })).item
     } else if (payload.source_id != null) {
       const { data: { session } } = await supabase.auth.getSession()

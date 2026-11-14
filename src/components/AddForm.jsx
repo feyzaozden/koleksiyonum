@@ -42,7 +42,7 @@ export default function AddForm({ category, creatorLabel, disabled, onSubmit, ex
         ...dates,
         rating: form.rating,
         ...(sourceId != null ? { source_id: sourceId } : {}),
-        ...(song ? { music_recording_id: song.id, music_release_id: song.release_id } : {}),
+        ...(song ? song.source === 'youtube' ? { youtube_source_id: song.id } : { music_recording_id: song.id, music_release_id: song.release_id } : {}),
       })
       if (saved === false) return
       setForm(EMPTY)
@@ -69,14 +69,14 @@ export default function AddForm({ category, creatorLabel, disabled, onSubmit, ex
   return (
     <div className="add-form" id="add-item-form" style={{ opacity: disabled ? 0.35 : 1, pointerEvents: disabled ? 'none' : 'auto' }} onKeyDown={handleKeyDown}>
       {music && <MusicSearch disabled={disabled || submitting} onSelect={selected => { setSong(selected); setForm(current => ({ ...current, title: selected.title, creator: selected.creator, year: selected.year })) }} />}
-      {song && <p role="status">{song.title} · {song.album || 'Albüm bilgisi yok'}</p>}
+      {song && <p role="status">{song.title} · {song.source === 'youtube' ? 'YouTube' : song.album || 'Albüm bilgisi yok'}</p>}
       {(category === 'film' || category === 'dizi') && <MovieSearch key={`${category}-${searchVersion}`} category={category} disabled={disabled || submitting} onManual={() => setSourceId(null)} onPendingChange={setMovieLoading} onSelect={(movie) => {
         setSourceId(movie.id)
         setForm((current) => ({ ...current, title: movie.title, creator: movie.creator, year: movie.year }))
       }} />}
       <div className="form-row">
         <input id="add-item-title" type="text" name="title" placeholder="Başlık *" maxLength={300} readOnly={sourceId != null || music} autoComplete="off" value={form.title} onChange={(e) => set('title', e.target.value)} />
-        <input type="text" name="creator" placeholder={creatorLabel} maxLength={300} readOnly={sourceId != null || music} autoComplete="off" value={form.creator} onChange={(e) => set('creator', e.target.value)} />
+        <input type="text" name="creator" aria-label={song?.source === 'youtube' ? 'YouTube kanalı' : creatorLabel} placeholder={song?.source === 'youtube' ? 'YouTube kanalı' : creatorLabel} maxLength={300} readOnly={sourceId != null || music} autoComplete="off" value={form.creator} onChange={(e) => set('creator', e.target.value)} />
         <input type="text" name="year" readOnly={sourceId != null || music} aria-label="Yıl" aria-invalid={Boolean(yearError)} aria-describedby={yearError ? 'add-year-error' : undefined} placeholder="Yıl" inputMode="numeric" maxLength={4} autoComplete="off" value={form.year} onChange={(e) => set('year', e.target.value.replace(/\D/g, '').slice(0, 4))} />
       </div>
       <div className="form-row">

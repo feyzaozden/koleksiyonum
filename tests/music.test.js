@@ -5,6 +5,49 @@ import { createMusicHandler } from '../server/music.js'
 const recording = '11111111-1111-4111-8111-111111111111'
 const release = '22222222-2222-4222-8222-222222222222'
 const env = { VITE_SUPABASE_URL: 'https://test.supabase.co', VITE_SUPABASE_ANON_KEY: 'anon', SUPABASE_SECRET_KEY: 'sb_secret_test', YOUTUBE_API_KEY: 'yt-secret' }
+test('YouTube creation verifies public embeddable source, preserves note, ignores injected metadata', async () => {
+  let saved
+  const handler = createMusicHandler({ env, fetchImpl: async (url, options) => {
+    if (String(url).includes('/auth/')) return Response.json({ id: 'owner' })
+    if (String(url).includes('/youtube/')) return Response.json({ items: [{ id: 'abcdefghijk', snippet: { title: 'Verified song', channelTitle: 'Official channel' }, status: { embeddable: true, privacyStatus: 'public' } }] })
+    assert.ok(String(url).includes('/rest/v1/items'))
+    saved = JSON.parse(options.body)
+    return Response.json([{ id: 7, ...saved }])
+  } })
+  const response = await call(handler, 'POST', { youtube_source_id: 'abcdefghijk', user_id: 'victim', title: 'Fake', year: '2026', album: 'Fake', note: 'Personal note', rating: 9 })
+  assert.equal(response.statusCode, 201)
+  assert.equal(saved.user_id, 'owner')
+  assert.equal(saved.title, 'Verified song')
+  assert.equal(saved.youtube_id, 'abcdefghijk')
+  assert.equal(saved.youtube_source_id, 'abcdefghijk')
+  assert.equal(saved.note, 'Personal note')
+  assert.equal(saved.album, undefined)
+  assert.equal(saved.year, undefined)
+})
+test('YouTube import rejects missing, private and embedding-disabled videos without writing', async () => {
+  for (const status of [null, { embeddable: false, privacyStatus: 'public' }, { embeddable: true, privacyStatus: 'private' }]) {
+    const handler = createMusicHandler({ env, fetchImpl: async url => {
+      if (String(url).includes('/auth/')) return Response.json({ id: 'owner' })
+      if (String(url).includes('/youtube/')) return Response.json({ items: status ? [{ id: 'abcdefghijk', status, snippet: { title: 'Song' } }] : [] })
+      throw new Error('Unexpected write')
+    } })
+    assert.equal((await call(handler, 'POST', { youtube_source_id: 'abcdefghijk' })).statusCode, 400)
+  }
+})
+test('YouTube search forwards page tokens and returns next page without leaking key', async () => {
+  const handler = createMusicHandler({ env, fetchImpl: async url => {
+    if (String(url).includes('/auth/')) return Response.json({ id: 'owner' })
+    const params = new URL(url).searchParams
+    assert.equal(params.get('pageToken'), 'second')
+    assert.equal(params.get('maxResults'), '15')
+    return Response.json({ nextPageToken: 'third', items: [{ id: { videoId: 'abcdefghijk' }, snippet: { title: 'Song', channelTitle: 'Channel' } }] })
+  } })
+  const response = await call(handler, 'GET', null, '/api/music?q=Song&videos=1&page=second')
+  assert.equal(response.statusCode, 200)
+  assert.equal(response.body.nextPage, 'third')
+  assert.equal(response.body.results.length, 1)
+  assert.ok(!JSON.stringify(response.body).includes('yt-secret'))
+})
 test('temporary catalog failure retries once and concurrent identical searches share cached result', async () => {
   let calls = 0
   const handler = createMusicHandler({ env, fetchImpl: async url => {
