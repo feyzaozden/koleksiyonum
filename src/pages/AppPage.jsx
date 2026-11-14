@@ -167,7 +167,7 @@ export default function AppPage() {
             </button>
           </div>
         </section>}
-        <div className="add-item-toolbar"><button type="button" className="btn-add" onClick={() => setAdding(true)}>+ Yeni ekle</button></div>
+        {activeTab !== 'muzik' && <div className="add-item-toolbar"><button type="button" className="btn-add" onClick={() => setAdding(true)}>+ Yeni ekle</button></div>}
         {adding && <AddItemModal key={activeTab} category={activeTab} creatorLabel={tab.creatorLabel} onSubmit={handleAdd} existingItems={statsItems} onClose={() => setAdding(false)} />}
         {loadError && <div className="auth-error" role="alert">Koleksiyon yüklenemedi. <button onClick={refresh}>Tekrar dene</button></div>}
         {loading && <p role="status">Koleksiyon yükleniyor…</p>}
@@ -193,6 +193,7 @@ export default function AppPage() {
         />}
           onFeature={setFeatured}
           musicOwner={activeTab === 'muzik' ? user.id : null}
+          onAddMusic={() => setAdding(true)}
           allSongs={statsItems}
           sections={sections}
           tabEmoji={tab.emoji}

@@ -40,7 +40,7 @@ export default function DeleteConfirm({ item, onCancel, onConfirm, playlist = fa
       <div className="delete-dialog-symbol" aria-hidden="true">−</div>
       <p className="eyebrow">{playlist ? 'Çalma listesini sil' : 'Koleksiyondan kaldır'}</p>
       <h2 id="delete-title">{playlist ? 'Bu çalma listesini silmek istiyor musun?' : 'Bu öğeyi silmek istiyor musun?'}</h2>
-      <p id="delete-description">{playlist ? <><strong>{item.name}</strong> çalma listesi silinecek. Şarkıların Listem’de ve diğer çalma listelerinde kalacak. Bu işlem geri alınamaz.</> : <><strong>{item.title}</strong> koleksiyonundan, puanı ve notlarıyla birlikte silinecek. Bu işlem geri alınamaz.</>}</p>
+      <p id="delete-description">{playlist ? <><strong>{item.name}</strong> çalma listesi silinecek. Şarkıların “Eklediğim şarkılar” bölümünde ve diğer çalma listelerinde kalacak. Bu işlem geri alınamaz.</> : <><strong>{item.title}</strong> koleksiyonundan, puanı ve notlarıyla birlikte silinecek. Bu işlem geri alınamaz.</>}</p>
       {error && <p className="auth-error" role="alert">{error}</p>}
       <div className="modal-actions">
         <button ref={cancelButton} className="btn-cancel" disabled={busy} onClick={onCancel}>Vazgeç</button>
