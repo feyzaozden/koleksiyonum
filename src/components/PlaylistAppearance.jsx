@@ -56,7 +56,7 @@ export default function PlaylistAppearance({ collection, ownerId, onSave, onClos
       <PlaylistCover path={remove ? null : collection.cover_path} />
       <label>Kapak fotoğrafı<input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={e => { const next = e.target.files?.[0]; try { validatePhoto(next); setFile(next); setRemove(false); setError('') } catch (err) { e.target.value = ''; setFile(null); setError(err.message) } }} /></label>
       <small>JPG, PNG veya WebP · En fazla 5 MB</small>
-      {collection.cover_path && <label><input type="checkbox" checked={remove} disabled={busy || !!file} onChange={e => setRemove(e.target.checked)} /> Kapağı kaldır</label>}
+      {collection.cover_path && <label className="playlist-remove-cover"><input type="checkbox" checked={remove} disabled={busy || !!file} onChange={e => setRemove(e.target.checked)} /><span>Kapağı kaldır</span></label>}
       <label>Açıklama<textarea rows={4} value={description} disabled={busy} onChange={e => setDescription(e.target.value)} /></label>
       {error && <p className="auth-error" role="alert">{error}</p>}
       <button className="btn-save" disabled={busy}>{busy ? 'Kaydediliyor…' : 'Kaydet'}</button>

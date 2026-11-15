@@ -54,7 +54,7 @@ export default function ItemCard({ item, isOwner, labels, ownerName, showOwner, 
             try { await onFeature(item.id, !item.featured_at); setMenuOpen(false) }
             catch (err) { setFeatureError(err.message) }
             finally { setFeatureBusy(false) }
-          }}>{featureBusy ? 'Kaydediliyor…' : item.featured_at ? 'Öne çıkanlardan kaldır' : 'Öne çıkar'}</button>}
+          }}>{featureBusy ? 'Kaydediliyor…' : item.featured_at ? 'Favorilerden kaldır' : 'Favorilere ekle'}</button>}
           {isOwner && item.category !== 'muzik' && item.status !== 'bitti' && <>
             <button type="button" onClick={() => { setMenuOpen(false); setProgressMode('edit') }}>İlerlemeyi güncelle</button>
             {item.category === 'dizi' && item.progress?.season && !(item.progress.seasons && item.progress.season >= item.progress.seasons) && <button type="button" onClick={() => { setMenuOpen(false); setProgressMode('edit') }}>Sonraki sezona geç</button>}

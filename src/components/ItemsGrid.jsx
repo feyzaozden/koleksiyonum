@@ -10,13 +10,13 @@ const EMPTY_MESSAGES = {
   bitti: () => ({ icon: '✅', h: 'Tamamlanan yok', p: 'Henüz tamamladığın bir şey yok.' }),
 }
 
-export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, search = '', onClearFilters, onStatusChange, onEdit, onDelete, onProgress, onAddToPlaylist, onFeature, compact = false }) {
+export default function ItemsGrid({ sections, tabEmoji, activeFilter, labels, search = '', onClearFilters, onStatusChange, onEdit, onDelete, onProgress, onAddToPlaylist, onFeature, compact = false, favoriteSlots = 0, onEmptyFavorite }) {
   const showSectionHeaders = sections.length > 1
   const reactions = useItemReactions(sections.flatMap((section) => section.items.map((item) => item.id)))
   const commentCounts = useCommentCounts(sections.flatMap(section => section.items.map(item => item.id)))
   if (compact) {
     const items = sections.flatMap(section => section.items)
-    return items.length ? <div className="profile-item-grid">{items.map(item => <ProfileItemCard key={item.id} item={item} reactions={reactions} commentCount={commentCounts[item.id]} />)}</div>
+    return items.length || favoriteSlots ? <div className="profile-item-grid">{items.map(item => <ProfileItemCard key={item.id} item={item} reactions={reactions} commentCount={commentCounts[item.id]} />)}{Array.from({ length: Math.max(0, favoriteSlots - items.length) }, (_, index) => onEmptyFavorite ? <button type="button" className="favorite-empty-card" key={`empty-${index}`} onClick={onEmptyFavorite}><span aria-hidden="true">+</span>Favori ekle</button> : <div className="favorite-empty-card" key={`empty-${index}`}><span aria-hidden="true">♡</span>Henüz seçilmedi</div>)}</div>
       : <p className="profile-empty">{search || activeFilter !== 'tumu' ? 'Bu filtrelere uygun içerik bulunamadı.' : 'Henüz içerik yok.'}</p>
   }
 

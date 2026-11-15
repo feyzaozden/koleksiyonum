@@ -111,8 +111,9 @@ export default function MusicCollection({ ownerId, allSongs, gridProps, filters,
   }
   return <>
     <section className="music-collection-controls" aria-label="Çalma listeleri">
-      {opened && <div className="playlist-open-heading"><button type="button" className="btn-cancel" onClick={() => { setSelected(null); setEditing(false) }}>← Çalma listeleri</button><h2>{currentCollection.name}</h2>{currentCollection.description && <p>{currentCollection.description}</p>}</div>}
+      {opened && <div className="playlist-open-heading"><h2>{currentCollection.name}</h2>{currentCollection.description && <p>{currentCollection.description}</p>}</div>}
       <div className="music-collection-toolbar">
+        {opened && <button type="button" className="btn-cancel" onClick={() => { setSelected(null); setEditing(false) }}>← Çalma listeleri</button>}
         {isOwner && onAddMusic && <button type="button" className="btn-add" onClick={onAddMusic}>+ Yeni ekle</button>}
         {opened && <button className="filter-btn" disabled={!sections[0]?.items.length} onClick={() => setPlaying(sections[0].items)}>▷ Listeyi dinle</button>}
         {!opened && isOwner && <button className="filter-btn" aria-expanded={creating} onClick={() => setCreating(v => !v)}>{creating ? 'Vazgeç' : '+ Çalma listesi'}</button>}
@@ -137,7 +138,7 @@ export default function MusicCollection({ ownerId, allSongs, gridProps, filters,
         {p.description && <span className="playlist-card-description">{p.description}</span>}
       </button>)}
     </div>}
-    {opened && filters}
+    {opened && <div className="music-list-filters">{filters}</div>}
     {deletingPlaylist && <DeleteConfirm playlist item={deletingPlaylist} onCancel={() => setDeletingPlaylist(null)} onConfirm={remove} />}
     {opened && (playlist && !sections[0]?.items.length ? <p>{memberIds.size ? 'Aramana uygun şarkı bulunamadı.' : 'Bu çalma listesi henüz boş.'} {isOwner && !memberIds.size && <>“Eklediğim şarkılar” bölümündeki bir şarkının ⋯ menüsünden “Çalma listesine ekle”yi seçebilirsin.</>}</p> : <ItemsGrid {...gridProps} sections={sections} onAddToPlaylist={setAddingSong} />)}
     {appearance && opened && <PlaylistAppearance collection={currentCollection} ownerId={ownerId} onClose={() => setAppearance(false)} onSave={async values => {

@@ -11,6 +11,8 @@ import AppHeader from '../components/AppHeader'
 import ProfileFriendMenu from '../components/ProfileFriendMenu'
 import ItemsGrid from '../components/CollectionGrid'
 import FilterBar from '../components/FilterBar'
+import { useState } from 'react'
+import FavoritesPicker from '../components/FavoritesPicker'
 
 export default function PersonPage() {
   const { id } = useParams()
@@ -26,7 +28,8 @@ export default function PersonPage() {
   const person = people.byId[id]
   const canView = id === user.id || person?.is_public || friends.friendIds.includes(id)
   const tab = TABS[category]
-  const featured = collection.items.filter(item => item.featured_at && TABS[item.category]).sort((a,b) => new Date(a.featured_at) - new Date(b.featured_at)).slice(0,6)
+  const [editingFavorites, setEditingFavorites] = useState(null)
+  const featured = collection.items.filter(item => item.featured_at && TABS[item.category]).sort((a,b) => new Date(a.featured_at) - new Date(b.featured_at))
   const section = items => [{ userId: id, userName: person?.display_name, isOwner: false, items }]
   return <><AppHeader /><main className="social-main visitor-profile">
     {people.loading ? <p role="status">Profil yükleniyor…</p> : people.error ? <div className="auth-error" role="alert">Profil yüklenemedi. <button onClick={people.refresh}>Tekrar dene</button></div> : !person ? <h1>Profil bulunamadı</h1> : <>
@@ -42,8 +45,10 @@ export default function PersonPage() {
           </div>
           {collection.loading && <p role="status">Koleksiyon güncelleniyor…</p>}
           {!tab ? <>
-            {!!featured.length && <section className="profile-featured"><h2>Öne çıkanlar</h2><ItemsGrid compact sections={section(featured)} activeFilter="tumu" /></section>}
-            {!collection.loading && !featured.length && <p className="profile-empty">Koleksiyonu görmek için bir kategori seç.</p>}
+            <section className="profile-featured profile-favorites-four">
+              <div className="profile-category-heading"><h2>Favoriler</h2>{id === user.id && <button className="btn-cancel" disabled={collection.loading} onClick={() => setEditingFavorites(true)}>Favorileri düzenle</button>}</div>
+              <ItemsGrid compact favoriteSlots={4} onEmptyFavorite={id === user.id && !collection.loading ? () => setEditingFavorites(true) : undefined} sections={section(featured.slice(0,4))} activeFilter="tumu" />
+            </section>
           </> : <section className="profile-category-content" aria-label={`${tab.label} koleksiyonu`}>
             <div className="profile-category-heading"><h2>{tab.label}</h2><button className="btn-cancel" type="button" onClick={() => setCategory(null)}>Profile dön</button></div>
             {category !== 'muzik' && <FilterBar category={category} search={search} onSearchChange={setSearch} statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} sort={sort} onSortChange={setSort} />}
@@ -52,5 +57,6 @@ export default function PersonPage() {
         </>}
       </>}
     </>}
+    {editingFavorites && id === user.id && <FavoritesPicker items={collection.items.filter(item => TABS[item.category])} onChange={collection.setFeatured} onClose={() => setEditingFavorites(false)} />}
   </main></>
 }
