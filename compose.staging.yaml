@@ -68,7 +68,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./deploy/staging/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./deploy/staging:/etc/caddy:ro
       - caddy_data:/data
       - caddy_config:/config
     networks: [web]

@@ -6,7 +6,7 @@ cd /home/ubuntu/koleksiyonum-staging
 test -f .env.staging.local
 test -f .deployed-image
 grep -q 'MAIL_MODE:' compose.staging.yaml
-docker compose -f compose.staging.yaml --env-file .env.staging.local exec -T caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+docker compose -f compose.staging.yaml --env-file .env.staging.local run --rm --no-deps caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
 read -r -s -p 'Resend API key (hidden): ' api_key
 printf '\n'
 read -r -p 'Sender [noreply@koleksiyonum.com.tr]: ' sender
@@ -34,6 +34,6 @@ if ! docker compose -f compose.staging.yaml --env-file .env.staging.local up -d 
   echo 'Mail configuration failed; previous environment restored.'
   exit 1
 fi
-docker compose -f compose.staging.yaml --env-file .env.staging.local exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+docker compose -f compose.staging.yaml --env-file .env.staging.local up -d --no-deps --force-recreate caddy
 echo 'Mail settings loaded. No email was sent by this script.'
 echo 'Use https://test.koleksiyonum.com.tr/auth-test to test delivery.'
