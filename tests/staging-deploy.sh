@@ -6,6 +6,7 @@ touch /home/ubuntu/koleksiyonum-staging/.env.staging.local
 cat > /tmp/mock-bin/docker <<'MOCK'
 #!/bin/bash
 echo "${BACKEND_IMAGE:-unset} $*" >> /tmp/docker-calls
+if [[ $1 == compose && " $* " == *' run '* && " $* " == *' --no-build '* ]]; then echo 'Unsupported compose run option' >&2; exit 125; fi
 if [[ $1 == inspect ]]; then echo sha256:previous; fi
 if [[ $1 == compose && " $* " == *' run '* && ${SCENARIO:-} == migration-fail ]]; then exit 1; fi
 if [[ $1 == compose && " $* " == *' up '* && ${SCENARIO:-} == health-fail && ${BACKEND_IMAGE:-} != koleksiyonum-backend:rollback ]]; then exit 1; fi

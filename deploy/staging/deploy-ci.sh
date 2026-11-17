@@ -18,7 +18,7 @@ docker load -i "$archive"
 docker image inspect "$BACKEND_IMAGE" >/dev/null
 compose config --quiet
 # Fail before replacement if any migration fails. Applied migrations are never undone here.
-compose --profile tools run --rm --no-build --no-deps migrate
+compose --profile tools run --rm --no-deps migrate
 if ! compose up -d --no-build --no-deps --wait --wait-timeout 120 backend; then
   echo 'Backend health check failed. Restoring previous image (database is not rolled back).'
   BACKEND_IMAGE=koleksiyonum-backend:rollback compose up -d --no-build --no-deps --wait --wait-timeout 120 backend
