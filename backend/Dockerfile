@@ -5,6 +5,7 @@ RUN npm ci --omit=dev
 COPY src ./src
 COPY migrations ./migrations
 COPY lab ./lab
+COPY pages ./pages
 ENV NODE_ENV=production
 USER node
 EXPOSE 3000

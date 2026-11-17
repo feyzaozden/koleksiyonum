@@ -32,6 +32,7 @@ jobs:
           bash -n deploy/staging/deploy-ci.sh
           sh -n deploy/staging/start.sh
           sh -n deploy/staging/install-ci.sh
+          bash -n deploy/staging/configure-mail.sh
       - name: Test deploy failure handling in isolated container
         run: docker run --rm --network none --mount "type=bind,source=$GITHUB_WORKSPACE,target=/source,readonly" node:24-bookworm-slim bash /source/tests/staging-deploy.sh
   deploy:
@@ -73,7 +74,7 @@ jobs:
         run: |
           curl --fail --silent --show-error --retry 5 --retry-all-errors --retry-delay 5 --max-time 20 \
             https://test.koleksiyonum.com.tr/health/db | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d.get("status")=="ok" and d.get("database")=="connected"'
-          for path in auth-lab auth/local-inbox auth/register; do
+          for path in auth-lab auth/local-inbox; do
             code=$(curl --silent --show-error --max-time 20 -o /dev/null -w '%{http_code}' "https://test.koleksiyonum.com.tr/$path")
             test "$code" = 404
           done

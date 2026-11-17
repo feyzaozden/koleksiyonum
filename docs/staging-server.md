@@ -13,7 +13,7 @@ Supabase anahtarları, yerel hesaplar ve yerel .env dosyaları bu pakete alınma
 
 ```powershell
 New-Item -ItemType Directory -Force backups | Out-Null
-tar -czf backups/koleksiyonum-staging.tar.gz compose.staging.yaml deploy/staging backend/Dockerfile backend/.dockerignore backend/package.json backend/package-lock.json backend/src backend/migrations backend/db backend/lab/.keep
+tar -czf backups/koleksiyonum-staging.tar.gz compose.staging.yaml deploy/staging backend/Dockerfile backend/.dockerignore backend/package.json backend/package-lock.json backend/src backend/migrations backend/db backend/pages backend/lab/.keep
 ```
 
 Staging'de test ekranı servis edilmez. Dockerfile COPY lab için yalnız boş dizin işaretçisi (.keep) pakete alınır.

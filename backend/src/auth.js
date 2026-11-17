@@ -21,13 +21,14 @@ async function bodyOf(req) {
   } catch { throw fail(400, 'Geçersiz istek.') }
 }
 
-export function createAuth(pool, { origin, allowLocalRegistration = false, requireEmailVerification = true } = {}) {
+export function createAuth(pool, { origin, allowLocalRegistration = false, requireEmailVerification = true, realMail = null } = {}) {
   const url = new URL(origin)
   if (url.origin !== origin) throw new Error('AUTH_ORIGIN must be an exact origin')
   const local = ['localhost','127.0.0.1','[::1]'].includes(url.hostname)
   if (url.protocol !== 'https:' && !(local && url.protocol === 'http:')) throw new Error('HTTPS required')
   if (allowLocalRegistration && !local) throw new Error('Unverified registration is local-only')
-  const mail = allowLocalRegistration ? createLocalMail(pool, origin) : null
+  if (realMail && (local || allowLocalRegistration || !requireEmailVerification)) throw new Error('Real mail requires HTTPS and verified accounts')
+  const mail = allowLocalRegistration ? createLocalMail(pool, origin) : realMail
   const secure = url.protocol === 'https:'
   const cookieName = secure ? '__Host-koleksiyonum_session' : 'koleksiyonum_dev_session'
   const cookie = (token, clear = false) => `${cookieName}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${clear ? 0 : 604800}${secure ? '; Secure' : ''}`
@@ -51,7 +52,7 @@ export function createAuth(pool, { origin, allowLocalRegistration = false, requi
       // No CORS. Same-origin JSON requests only, including login (login CSRF).
       if (method === 'POST' && (req.headers.origin !== origin || req.headers['sec-fetch-site'] === 'cross-site')) throw fail(403,'İstek kaynağına izin verilmiyor.')
       if (path === '/auth/local-inbox') {
-        if (!mail) return reply(404,{ error:'not_found' })
+        if (!allowLocalRegistration || !mail) return reply(404,{ error:'not_found' })
         // Require a custom header and matching Host, preventing cross-origin reads/DNS rebinding.
         if (req.headers['x-local-lab'] !== '1' || req.headers.host !== url.host || (req.headers.origin && req.headers.origin !== origin) || req.headers['sec-fetch-site'] === 'cross-site') throw fail(403,'Yerel test ekranından aç.')
         return reply(200,{ messages:mail.list() })
@@ -74,14 +75,16 @@ export function createAuth(pool, { origin, allowLocalRegistration = false, requi
         if (typeof body.token !== 'string' || !/^[a-f0-9]{64}$/.test(body.token)) throw fail(400,'Bağlantı geçersiz veya süresi dolmuş.')
         const reset = path === '/auth/reset-password'
         let newHash = null
-        if (reset) {
+        if (reset || realMail) {
           if (typeof body.password !== 'string' || body.password.length < 8 || body.password.length > 128 || !/[A-Z]/.test(body.password) || !/[a-z]/.test(body.password) || !/[0-9]/.test(body.password)) throw fail(400,'Şifre 8–128 karakter, büyük harf, küçük harf ve rakam içermeli.')
           if (body.password !== body.password_confirmation) throw fail(400,'Şifreler aynı olmalı.')
           newHash = await hashPassword(body.password)
         }
-        const result = await pool.query('SELECT accounts.consume_action_token($1,$2,$3) AS consumed',[digest(body.token),reset ? 'reset' : 'verify',newHash])
+        const result = realMail && !reset
+          ? await pool.query('SELECT accounts.confirm_email_with_password($1,$2) AS consumed',[digest(body.token),newHash])
+          : await pool.query('SELECT accounts.consume_action_token($1,$2,$3) AS consumed',[digest(body.token),reset ? 'reset' : 'verify',newHash])
         if (!result.rows[0]?.consumed) throw fail(400,'Bağlantı geçersiz, kullanılmış veya süresi dolmuş.')
-        if (reset) res.setHeader('Set-Cookie',cookie('',true))
+        if (reset || realMail) res.setHeader('Set-Cookie',cookie('',true))
         return reply(200,{ ok:true })
       }
       const email = emailOf(body.email)
@@ -96,7 +99,7 @@ export function createAuth(pool, { origin, allowLocalRegistration = false, requi
       await limit('email:' + email,10)
       let user, hash
       if (path === '/auth/register') {
-        if (!allowLocalRegistration) throw fail(503,'Kayıt henüz kullanıma açık değil.')
+        if (!allowLocalRegistration && !realMail?.allows(email)) throw fail(403,'Bu test ortamında kayıt yalnızca izin verilen e-posta adreslerine açıktır.')
         const username = typeof body.username === 'string' ? body.username.replace(/[A-Z]/g,c => c.toLowerCase()) : ''
         const name = typeof body.display_name === 'string' ? body.display_name.trim() : ''
         if (!/^[a-z][a-z0-9_.]{2,29}$/.test(username)) throw fail(400,'Kullanıcı adı 3–30 karakter olmalı; küçük harfle başlamalı, yalnızca harf, rakam, _ ve . içermeli.')

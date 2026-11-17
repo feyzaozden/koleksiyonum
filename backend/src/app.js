@@ -10,6 +10,16 @@ export function createApp(pool, options = {}) {
     res.setHeader('X-Content-Type-Options', 'nosniff')
     res.setHeader('Referrer-Policy', 'no-referrer')
     const path = new URL(req.url, 'http://localhost').pathname
+    if (options.realMail && req.method === 'GET' && ['/auth-test','/auth-test.js'].includes(path)) {
+      try {
+        const html = path === '/auth-test'
+        const contents = await readFile(new URL(html ? '../pages/auth-test.html' : '../pages/auth-test.js',import.meta.url))
+        res.setHeader('Content-Type',html ? 'text/html; charset=utf-8' : 'text/javascript; charset=utf-8')
+        res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'")
+        res.end(contents)
+      } catch { res.writeHead(503); res.end('{"error":"page_unavailable"}') }
+      return
+    }
     if (options.allowLocalRegistration && req.method === 'GET' && ['/auth-lab','/auth-lab.js'].includes(path)) {
       try {
         const html = path === '/auth-lab'

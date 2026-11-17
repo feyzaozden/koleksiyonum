@@ -48,6 +48,10 @@ services:
       PGPASSWORD: ${STAGING_DB_APP_PASSWORD:?Staging app password required}
       AUTH_ORIGIN: https://test.koleksiyonum.com.tr
       AUTH_LOCAL_REGISTRATION: "false"
+      MAIL_MODE: ${MAIL_MODE:-disabled}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+      MAIL_TEST_RECIPIENTS: ${MAIL_TEST_RECIPIENTS:-}
     networks: [database, web]
     depends_on:
       db:

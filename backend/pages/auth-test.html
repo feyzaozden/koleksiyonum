@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Koleksiyonum — hesap denemesi</title>
+<style>body{font:16px/1.5 system-ui;background:#e8e8df;color:#233a34;max-width:680px;margin:24px auto;padding:16px}section{background:#f8f7f0;padding:24px;border:1px solid #ccc;border-radius:14px;margin:16px 0}label{display:grid;gap:5px;margin:12px 0}input,button{font:inherit;padding:10px;border:1px solid #aaa;border-radius:8px}button{cursor:pointer;background:#233a34;color:white}button:disabled{opacity:.5}#message{white-space:pre-wrap}h1{font-size:1.5rem}</style></head>
+<body><h1>Koleksiyonum — hesap denemesi</h1>
+<p>Bu ayrı bir test ortamıdır. Canlı hesabını ve koleksiyonunu değiştirmez. Yalnızca izin verilen test adresleriyle kayıt yapılabilir.</p>
+<p id="message" role="status" aria-live="polite"></p>
+<section id="action-panel" hidden><h2 id="action-title"></h2><form id="action-form">
+<p>E-posta adresinin sahibi olarak hesabın şifresini belirle. En az 8 karakter, büyük harf, küçük harf ve rakam kullan.</p>
+<label>Şifre<input name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></label>
+<label>Şifre tekrar<input name="password_confirmation" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></label>
+<button>Onayla</button></form></section>
+<section><h2>Oturum</h2><p id="session">Kontrol ediliyor…</p><button id="logout" type="button">Çıkış yap</button></section>
+<section><h2>Kayıt ol</h2><form id="register">
+<label>Ad soyad<input name="display_name" maxlength="100" autocomplete="name" required></label>
+<label>Kullanıcı adı<input name="username" minlength="3" maxlength="30" autocomplete="username" autocapitalize="none" required></label>
+<label>E-posta<input name="email" type="email" maxlength="254" autocomplete="email" required></label>
+<label>Şifre<input name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></label>
+<label>Şifre tekrar<input name="password_confirmation" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></label>
+<p>En az 8 karakter, büyük harf, küçük harf ve rakam.</p><button>Kayıt ol</button></form></section>
+<section><h2>Giriş yap</h2><form id="login">
+<label>E-posta<input name="email" type="email" autocomplete="username" required></label>
+<label>Şifre<input name="password" type="password" maxlength="128" autocomplete="current-password" required></label><button>Giriş yap</button></form></section>
+<section><h2>Bağlantı iste</h2><form id="request-link">
+<label>E-posta<input name="email" type="email" autocomplete="email" required></label>
+<button name="action" value="request-verification">Doğrulama e-postasını tekrar gönder</button>
+<button name="action" value="forgot-password">Şifremi unuttum</button></form></section>
+<script src="/auth-test.js" defer></script></body></html>

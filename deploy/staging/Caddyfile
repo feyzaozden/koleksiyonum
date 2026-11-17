@@ -12,6 +12,12 @@ test.koleksiyonum.com.tr {
     handle @health {
         reverse_proxy backend:3000
     }
+    @auth {
+        path /auth-test /auth-test.js /auth/register /auth/login /auth/logout /auth/session /auth/request-verification /auth/forgot-password /auth/verify-email /auth/reset-password
+    }
+    handle @auth {
+        reverse_proxy backend:3000
+    }
     @home {
         method GET HEAD
         path /

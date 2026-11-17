@@ -7,4 +7,6 @@
 !migrations/**
 !lab/
 !lab/**
+!pages/
+!pages/**
 !Dockerfile
