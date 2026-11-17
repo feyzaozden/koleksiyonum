@@ -1,0 +1,83 @@
+name: koleksiyonum-staging
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+services:
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: collection_admin
+      POSTGRES_DB: collection_dev
+      POSTGRES_PASSWORD: ${STAGING_DB_ADMIN_PASSWORD:?Staging admin password required}
+      APP_DB_PASSWORD: ${STAGING_DB_APP_PASSWORD:?Staging app password required}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/db/init.sh:/docker-entrypoint-initdb.d/01-app-user.sh:ro
+    networks: [database]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U collection_admin -d collection_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+    logging: *logging
+  migrate:
+    profiles: [tools]
+    build: ./backend
+    image: ${BACKEND_IMAGE:-koleksiyonum-backend:staging}
+    command: [node, src/migrate.js]
+    environment:
+      PGHOST: db
+      PGDATABASE: collection_dev
+      PGUSER: collection_admin
+      PGPASSWORD: ${STAGING_DB_ADMIN_PASSWORD:?Staging admin password required}
+    networks: [database]
+    depends_on:
+      db:
+        condition: service_healthy
+    logging: *logging
+  backend:
+    build: ./backend
+    image: ${BACKEND_IMAGE:-koleksiyonum-backend:staging}
+    environment:
+      PGHOST: db
+      PGDATABASE: collection_dev
+      PGUSER: collection_app
+      PGPASSWORD: ${STAGING_DB_APP_PASSWORD:?Staging app password required}
+      AUTH_ORIGIN: https://test.koleksiyonum.com.tr
+      AUTH_LOCAL_REGISTRATION: "false"
+    networks: [database, web]
+    depends_on:
+      db:
+        condition: service_healthy
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+    logging: *logging
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/staging/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [web]
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    logging: *logging
+networks:
+  database:
+    internal: true
+  web:
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

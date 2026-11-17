@@ -1,0 +1,82 @@
+name: Backend CI and staging deployment
+on:
+  pull_request:
+    branches: [master, staging]
+  push:
+    branches: [staging]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: node --test --test-concurrency=2 tests/*.test.js
+      - run: node --test backend/tests/*.test.js
+      - name: Validate staging configuration
+        env:
+          STAGING_DB_ADMIN_PASSWORD: ci-validation-only
+          STAGING_DB_APP_PASSWORD: ci-validation-only
+        run: |
+          docker compose -f compose.staging.yaml config --quiet
+          bash -n deploy/staging/deploy-ci.sh
+          sh -n deploy/staging/start.sh
+          sh -n deploy/staging/install-ci.sh
+      - name: Test deploy failure handling in isolated container
+        run: docker run --rm --network none --mount "type=bind,source=$GITHUB_WORKSPACE,target=/source,readonly" node:24-bookworm-slim bash /source/tests/staging-deploy.sh
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/staging' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment:
+      name: staging
+      url: https://test.koleksiyonum.com.tr
+    concurrency:
+      group: koleksiyonum-staging-deploy
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Build versioned backend image
+        run: |
+          docker build --tag "koleksiyonum-backend:sha-$GITHUB_SHA" backend
+          docker save "koleksiyonum-backend:sha-$GITHUB_SHA" | gzip > /tmp/backend-image.tar.gz
+      - name: Configure SSH with pinned host identity
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.STAGING_SSH_KNOWN_HOSTS }}
+        run: |
+          test -n "$SSH_PRIVATE_KEY" && test -n "$SSH_KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/staging_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/staging_key ~/.ssh/known_hosts
+      - name: Upload and deploy
+        run: |
+          opts=(-i "$HOME/.ssh/staging_key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15)
+          ssh "${opts[@]}" ubuntu@15.235.94.106 'mkdir -p ~/koleksiyonum-ci && chmod 700 ~/koleksiyonum-ci'
+          scp "${opts[@]}" /tmp/backend-image.tar.gz "ubuntu@15.235.94.106:koleksiyonum-ci/$GITHUB_SHA.tar.gz"
+          ssh "${opts[@]}" ubuntu@15.235.94.106 "sudo -n /usr/local/sbin/koleksiyonum-deploy '$GITHUB_SHA'"
+      - name: Check public HTTPS endpoint
+        run: |
+          curl --fail --silent --show-error --retry 5 --retry-all-errors --retry-delay 5 --max-time 20 \
+            https://test.koleksiyonum.com.tr/health/db | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d.get("status")=="ok" and d.get("database")=="connected"'
+          for path in auth-lab auth/local-inbox auth/register; do
+            code=$(curl --silent --show-error --max-time 20 -o /dev/null -w '%{http_code}' "https://test.koleksiyonum.com.tr/$path")
+            test "$code" = 404
+          done
+      - name: Remove runner credentials
+        if: always()
+        run: rm -f ~/.ssh/staging_key ~/.ssh/known_hosts /tmp/backend-image.tar.gz

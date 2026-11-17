@@ -1,0 +1,25 @@
+test.koleksiyonum.com.tr {
+    header {
+        X-Robots-Tag "noindex, nofollow"
+        X-Content-Type-Options nosniff
+        Referrer-Policy no-referrer
+        Cache-Control no-store
+    }
+    @health {
+        method GET
+        path /health /health/db
+    }
+    handle @health {
+        reverse_proxy backend:3000
+    }
+    @home {
+        method GET HEAD
+        path /
+    }
+    handle @home {
+        respond "Koleksiyonum test sunucusu hazir. Uygulama tasima islemleri devam ediyor." 200
+    }
+    handle {
+        respond "Not found" 404
+    }
+}
