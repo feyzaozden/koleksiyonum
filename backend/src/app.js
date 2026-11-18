@@ -1,15 +1,31 @@
 import { createServer } from 'node:http'
 import { createAuth } from './auth.js'
 import { readFile } from 'node:fs/promises'
+import { createItems } from './items.js'
 
 export function createApp(pool, options = {}) {
   const auth = options.origin ? createAuth(pool, options) : null
+  const items = options.origin ? createItems(pool,options) : null
   return createServer(async (req, res) => {
     res.setHeader('Content-Type', 'application/json; charset=utf-8')
     res.setHeader('Cache-Control', 'no-store')
     res.setHeader('X-Content-Type-Options', 'nosniff')
     res.setHeader('Referrer-Policy', 'no-referrer')
     const path = new URL(req.url, 'http://localhost').pathname
+    if(path==='/api/collection'||path.startsWith('/api/collection/')) {
+      if(items)return items(req,res,path)
+      res.writeHead(503);res.end('{"error":"not_configured"}');return
+    }
+    if(options.origin && req.method==='GET' && ['/collection-test','/collection-test.js'].includes(path)) {
+      try {
+        const html=path==='/collection-test'
+        const contents=await readFile(new URL(html?'../pages/collection-test.html':'../pages/collection-test.js',import.meta.url))
+        res.setHeader('Content-Type',html?'text/html; charset=utf-8':'text/javascript; charset=utf-8')
+        res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'")
+        res.end(contents)
+      }catch{res.writeHead(503);res.end('{"error":"page_unavailable"}')}
+      return
+    }
     if (options.realMail && req.method === 'GET' && ['/auth-test','/auth-test.js'].includes(path)) {
       try {
         const html = path === '/auth-test'

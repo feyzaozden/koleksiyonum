@@ -1,0 +1,16 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Koleksiyon işlemleri — test</title>
+<style>body{font:16px/1.5 system-ui;background:#e8e8df;color:#233a34;max-width:850px;margin:24px auto;padding:16px}section,article{background:#f8f7f0;padding:20px;border:1px solid #ccc;border-radius:12px;margin:12px 0}label{display:grid;gap:4px;margin:10px 0}input,select,textarea,button{font:inherit;padding:9px;border:1px solid #aaa;border-radius:7px}button{cursor:pointer;margin:4px}button:disabled{opacity:.5}#message{white-space:pre-wrap}textarea{min-height:60px}article p{white-space:pre-wrap;overflow-wrap:anywhere}</style></head><body>
+<h1>Koleksiyon işlemleri — test</h1><p>Yalnız bu test hesabının kayıtları. Canlı koleksiyonuna dokunulmaz. Bu adımda manuel ekleme denenir; katalog araması ve ilerleme işlemleri henüz bağlı değildir.</p>
+<a href="/auth-test">Hesabına giriş yap</a><p id="message" role="status" aria-live="polite"></p>
+<section><h2 id="form-title">Yeni içerik</h2><form id="item-form">
+<label>Kategori<select name="category"><option value="kitap">Kitap</option><option value="film">Film</option><option value="dizi">Dizi</option><option value="muzik">Müzik</option></select></label>
+<label>Başlık<input name="title" maxlength="300" required></label>
+<label>Yazar / yönetmen / sanatçı<input name="creator" maxlength="300"></label>
+<label>Yıl<input name="year" inputmode="numeric" maxlength="4"></label>
+<label id="status-label">Durum<select name="status"><option value="bekliyor">Listede bekliyor</option><option value="devam">Devam ediyor</option><option value="bitti">Bitti</option></select></label>
+<label>Başlangıç<input name="start_date" type="date"></label><label>Bitiş<input name="end_date" type="date"></label>
+<label>Puan<input name="rating" type="number" min="1" max="10" step="1"></label>
+<label>Not<textarea name="note" maxlength="3000"></textarea></label>
+<button type="submit">Kaydet</button><button id="cancel" type="button">Vazgeç / yeni kayıt</button></form></section>
+<section><label>Filtre<select id="category-filter"><option value="">Tümü</option><option value="kitap">Kitap</option><option value="film">Film</option><option value="dizi">Dizi</option><option value="muzik">Müzik</option></select></label><button id="refresh">Yenile</button><p id="count"></p><div id="items"></div><button id="previous">Önceki</button><button id="next">Sonraki</button></section>
+<script src="/collection-test.js" defer></script></body></html>

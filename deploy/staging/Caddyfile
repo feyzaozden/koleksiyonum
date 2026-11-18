@@ -18,6 +18,12 @@ test.koleksiyonum.com.tr {
     handle @auth {
         reverse_proxy backend:3000
     }
+    @collection {
+        path /collection-test /collection-test.js /api/collection /api/collection/*
+    }
+    handle @collection {
+        reverse_proxy backend:3000
+    }
     @home {
         method GET HEAD
         path /
