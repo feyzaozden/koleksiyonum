@@ -1,0 +1,10 @@
+.independent-collection .collection-toolbar { display: flex; gap: .75rem; justify-content: flex-end; flex-wrap: wrap; margin: 1rem 0; }
+.independent-collection .item-card:has(.item-overflow-toggle[aria-expanded="true"]) { z-index: 5; overflow: visible; }
+.independent-collection .add-item-dialog .form-row > label,
+.independent-collection .add-item-dialog fieldset > label { display: flex; flex-direction: column; gap: .4rem; flex: 1; min-width: 0; margin-bottom: .8rem; }
+.independent-collection .add-item-dialog input,
+.independent-collection .add-item-dialog select,
+.independent-collection .add-item-dialog textarea { font: inherit; max-width: 100%; }
+.independent-collection .add-item-dialog textarea { width: 100%; min-height: 5rem; resize: vertical; }
+.independent-collection .add-item-dialog .form-row { flex-wrap: wrap; }
+@media (max-width: 600px) { .independent-collection .add-item-dialog .form-row > label { flex-basis: 100%; } }

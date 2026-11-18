@@ -30,6 +30,22 @@ Backend Docker imajını yerelde oluştururken de önce bu komut çalıştırıl
 CI bunu otomatik yapar. Sunucuda Caddyfile güncellendikten sonra validate ve
 reload gerekir. Supabase SQL Editor'de çalıştırılacak yeni SQL yoktur.
 
-Sonraki aşama: mevcut ekleme/düzenleme pencerelerini bağımsız API'ye bağlamak.
+## Ekleme, düzenleme ve silme bağlantısı
+
+`ItemFormDialog.jsx` ekleme ve düzenleme için aynı pencereyi kullanır. Mevcut
+DateField ve StarInput bileşenleri korunur. Backend henüz katalog ve ilerleme
+alanlarını kabul etmediği için form sadece manuel içerik alanlarını gönderir.
+`ItemMenu.jsx` kartın üç nokta menüsünü oluşturur; dışarı tıklanınca veya Escape
+ile kapanır. Silme için mevcut `DeleteConfirm` bileşeni kullanılır.
+
+`client.js` içindeki `saveItem` yeni kayıt için POST, mevcut kayıt için PATCH,
+`removeItem` DELETE gönderir. Kullanıcı kimliği gönderilmez, oturum çerezi
+backend tarafından doğrulanır. PATCH ve DELETE mevcut kaydın `revision`
+değerini taşır. Başka bir sekmede değişen kayıt böylece yanlışlıkla ezilmez.
+Başarısız kaydetmede form açık kalır. Başarılı işlemde React listesi sunucudan
+dönen kayıtla güncellenir; sayfayı yenilemek gerekmez. Listeyi yenile düğmesi
+diğer sekmelerdeki değişiklikleri tekrar yükler.
+
+Sonraki aşama: ilerleme bilgileri ve katalog araması.
 Sosyal özellikler, katalog araması, müzik oynatma ve ilerleme bu ekranda henüz
 etkin değildir. Manuel test ekranı `/collection-test` kullanılabilir durumda kalır.

@@ -8,7 +8,11 @@ import StarsDisplay from '../components/StarsDisplay'
 import { TABS } from '../constants/tabs'
 import { filterAndSortItems } from '../utils/filterSort'
 import { fmtDate } from '../utils/format'
-import { loadCollection, request } from './client'
+import { loadCollection, request, saveItem, removeItem } from './client'
+import ItemFormDialog from './ItemFormDialog'
+import ItemMenu from './ItemMenu'
+import DeleteConfirm from '../components/DeleteConfirm'
+import './styles.css'
 
 function CollectionApp() {
   const [user, setUser] = useState(null)
@@ -20,6 +24,21 @@ function CollectionApp() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('tumu')
   const [sort, setSort] = useState('newest')
+  const [editor, setEditor] = useState(null)
+  const [deleting, setDeleting] = useState(null)
+  const [notice, setNotice] = useState('')
+  function reload() { setEditor(null); setDeleting(null); setAttempt(value => value + 1) }
+  async function save(payload, existing) {
+    const saved = await saveItem(existing ? payload : { ...payload, emoji: TABS[payload.category].emoji }, existing)
+    setItems(previous => existing ? previous.map(item => item.id === saved.id ? saved : item) : [saved, ...previous])
+    if (!existing) { setSearch(''); setStatusFilter('tumu'); setSort('newest') }
+    setNotice(existing ? 'Değişiklikler kaydedildi.' : 'İçerik koleksiyonuna eklendi.')
+  }
+  async function remove() {
+    await removeItem(deleting)
+    setItems(previous => previous.filter(item => item.id !== deleting.id))
+    setNotice('İçerik silindi.')
+  }
   useEffect(() => {
     const controller = new AbortController()
     setLoading(true); setError(null); setItems([])
@@ -41,13 +60,16 @@ function CollectionApp() {
   }, [category])
   const tab = TABS[category]
   const visible = filterAndSortItems(items, { category, search, statusFilter, sort })
-  return <div className="app-shell"><main className="main app-content">
+  return <div className="app-shell independent-collection"><main className="main app-content">
     <section className="profile-hero"><div><h1>{user?.display_name || 'Koleksiyonum'}</h1>{user?.username && <p>@{user.username}</p>}</div></section>
     <div className="tabs">{Object.entries(TABS).map(([key, value]) => <button type="button" key={key} className={'tab-btn' + (category === key ? ' active' : '')} aria-pressed={category === key} onClick={() => { setCategory(key); setStatusFilter('tumu') }}>{value.emoji} {value.label}</button>)}</div>
     {loading ? <p role="status">Koleksiyon yükleniyor…</p> : error ? <div role="alert"><p>{error.message}</p>{error.status === 401 ? <a href="/auth-test">Giriş yap</a> : <button type="button" onClick={() => setAttempt(value => value + 1)}>Tekrar dene</button>}</div> : <>
+      <div className="collection-toolbar"><button type="button" className="btn-add" onClick={() => setEditor({ category, item: null })}>+ Yeni ekle</button><button type="button" className="btn-cancel" onClick={reload}>Listeyi yenile</button></div>
+      <p role="status">{notice}</p>
       {category !== 'muzik' && <StatsBar items={items.filter(item => item.category === category)} collectionItems={items.filter(item => item.category !== 'muzik')} labels={tab.statusLabels} />}
       <FilterBar category={category} search={search} onSearchChange={setSearch} statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} sort={sort} onSortChange={setSort} />
       <div className="items-grid">{visible.map(item => <article className="item-card" key={item.id}>
+        <ItemMenu item={item} onEdit={() => setEditor({ category: item.category, item })} onDelete={() => setDeleting(item)} />
         <div className="item-emoji" aria-hidden="true">{item.emoji || tab.emoji}</div>
         <div className="item-body"><h3 className="item-title">{item.title}</h3><p className="item-meta">{[item.creator, item.year].filter(Boolean).join(' · ')}</p>
           {category !== 'muzik' && <span className={'status-badge ' + item.status}>{tab.statusLabels[item.status]}</span>}
@@ -58,6 +80,8 @@ function CollectionApp() {
       </article>)}</div>
       {!visible.length && <p className="empty">{search || statusFilter !== 'tumu' ? 'Bu filtrelere uygun içerik bulunamadı.' : 'Bu kategoride henüz içerik yok.'}</p>}
     </>}
+    {editor && <ItemFormDialog category={editor.category} item={editor.item} onClose={() => setEditor(null)} onSave={save} onReload={reload} />}
+    {deleting && <DeleteConfirm item={deleting} onCancel={() => setDeleting(null)} onConfirm={remove} />}
   </main></div>
 }
 
