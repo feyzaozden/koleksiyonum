@@ -21,6 +21,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npx vite build --config vite.independent.config.js
       - run: node --test --test-concurrency=2 tests/*.test.js
       - run: node --test backend/tests/*.test.js
       - name: Validate staging configuration
@@ -52,6 +53,8 @@ jobs:
           persist-credentials: false
       - name: Build versioned backend image
         run: |
+          npm ci
+          npx vite build --config vite.independent.config.js
           docker build --tag "koleksiyonum-backend:sha-$GITHUB_SHA" backend
           docker save "koleksiyonum-backend:sha-$GITHUB_SHA" | gzip > /tmp/backend-image.tar.gz
       - name: Configure SSH with pinned host identity

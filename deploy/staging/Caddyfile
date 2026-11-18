@@ -19,7 +19,7 @@ test.koleksiyonum.com.tr {
         reverse_proxy backend:3000
     }
     @collection {
-        path /collection-test /collection-test.js /api/collection /api/collection/*
+        path /collection-app /collection-app/* /collection-test /collection-test.js /api/collection /api/collection/*
     }
     handle @collection {
         reverse_proxy backend:3000

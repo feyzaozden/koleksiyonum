@@ -12,6 +12,19 @@ export function createApp(pool, options = {}) {
     res.setHeader('X-Content-Type-Options', 'nosniff')
     res.setHeader('Referrer-Policy', 'no-referrer')
     const path = new URL(req.url, 'http://localhost').pathname
+    if (path === '/collection-app' || path.startsWith('/collection-app/')) {
+      if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405); res.end(); return }
+      const asset = path.slice('/collection-app/'.length)
+      const entry = path === '/collection-app' || path === '/collection-app/'
+      if (!entry && !/^assets\/[a-zA-Z0-9_-]+\.(js|css)$/.test(asset)) { res.writeHead(404); res.end(); return }
+      try {
+        const data = await readFile(new URL('../pages/collection-ui/' + (entry ? 'collection-app.html' : asset), import.meta.url))
+        res.setHeader('Content-Type', entry ? 'text/html; charset=utf-8' : asset.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/javascript; charset=utf-8')
+        res.setHeader('Content-Security-Policy', "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
+        res.end(req.method === 'HEAD' ? undefined : data)
+      } catch { res.writeHead(404); res.end() }
+      return
+    }
     if(path==='/api/collection'||path.startsWith('/api/collection/')) {
       if(items)return items(req,res,path)
       res.writeHead(503);res.end('{"error":"not_configured"}');return
