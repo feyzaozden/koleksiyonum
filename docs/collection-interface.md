@@ -46,6 +46,6 @@ Başarısız kaydetmede form açık kalır. Başarılı işlemde React listesi s
 dönen kayıtla güncellenir; sayfayı yenilemek gerekmez. Listeyi yenile düğmesi
 diğer sekmelerdeki değişiklikleri tekrar yükler.
 
-Sonraki aşama: ilerleme bilgileri ve katalog araması.
-Sosyal özellikler, katalog araması, müzik oynatma ve ilerleme bu ekranda henüz
-etkin değildir. Manuel test ekranı `/collection-test` kullanılabilir durumda kalır.
+İlerleme ve film/dizi katalog araması da bağlandı; ayrıntılar
+`docs/catalog-progress-backend.md` dosyasındadır. Sosyal özellikler ve müzik
+oynatma henüz taşınmadı. Manuel test ekranı `/collection-test` kullanılabilir durumda kalır.

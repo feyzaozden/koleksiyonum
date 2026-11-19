@@ -6,6 +6,13 @@ import { PGlite } from '@electric-sql/pglite'
 import { createApp } from '../backend/src/app.js'
 import { createCatalog } from '../backend/src/catalog.js'
 
+test('numeric searches cannot collide with cached catalog IDs', async () => {
+  const lookup = createCatalog({ token: 'test-only', fetchImpl: async url => Response.json(url.pathname.includes('/search/')
+    ? { results: [{ id: 123, title: 'Film' }] } : { id: 123, title: 'Film', credits: { crew: [] } }) })
+  assert.equal((await lookup('film', { q: '123' })).results.length, 1)
+  assert.equal((await lookup('film', { id: 123 })).title, 'Film')
+})
+
 test('catalog enforces sessions and verified metadata; progress is validated and versioned atomically', async () => {
   const db = new PGlite(); let app, providerCalls = 0
   try {

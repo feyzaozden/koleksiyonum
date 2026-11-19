@@ -6,7 +6,7 @@ export function createCatalog({ token = process.env.TMDB_READ_ACCESS_TOKEN, fetc
     if (!['film', 'dizi'].includes(category) || (id != null ? !/^[1-9]\d{0,9}$/.test(String(id)) : typeof q !== 'string' || q.trim().length < 2 || q.trim().length > 100)) throw fail(400, 'Geçerli bir arama yap.')
     if (!token) throw fail(503, 'Film/dizi araması henüz hazır değil. Bilgileri elle ekleyebilirsin.')
     const today = now().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' })
-    const key = `${today}:${category}:${id || q.trim()}`
+    const key = `${today}:${category}:${id != null ? `id:${id}` : `q:${q.trim()}`}`
     const hit = cache.get(key)
     if (hit?.until > now().getTime()) return hit.value
     const type = category === 'dizi' ? 'tv' : 'movie'

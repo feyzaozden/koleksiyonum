@@ -12,7 +12,7 @@ BACKEND_IMAGE=$(cat .deployed-image)
 [[ $BACKEND_IMAGE =~ ^koleksiyonum-backend:sha-[0-9a-f]{40}$ ]] || exit 1
 if [[ -t 0 ]]; then read -r -s -p 'TMDB API Read Access Token (hidden): ' token; printf '\n'; else read -r token; fi
 token=${token%$'\r'}
-[[ $token =~ ^[A-Za-z0-9_.-]{30,}$ ]] || { echo 'Invalid token format'; exit 1; }
+[[ $token =~ ^[A-Za-z0-9_.+/=-]{30,}$ ]] || { echo 'Invalid token format'; exit 1; }
 umask 077
 temp_env=$(mktemp .env.catalog.XXXXXX.local)
 trap 'rm -f "$temp_env"' EXIT
