@@ -14,6 +14,7 @@ export function createApp(pool, options = {}) {
     res.setHeader('X-Content-Type-Options', 'nosniff')
     res.setHeader('Referrer-Policy', 'no-referrer')
     const path = new URL(req.url, 'http://localhost').pathname
+    if (path === '/api/collection/password' && auth) return auth(req,res,'/auth/change-password')
     if (path === '/api/collection/profile/photo' && photo) return photo(req, res)
     if (path === '/collection-app' || path.startsWith('/collection-app/')) {
       if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405); res.end(); return }

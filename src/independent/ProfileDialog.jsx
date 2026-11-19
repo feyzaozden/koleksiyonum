@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { normalizeUsername, validateUsername, USERNAME_HINT } from '../utils/username'
 import { request } from './client'
+import PasswordForm from './PasswordForm'
 
 export default function ProfileDialog({ onClose, onSaved }) {
   const dialog = useRef(null), locked = useRef(false)
@@ -65,5 +66,6 @@ export default function ProfileDialog({ onClose, onSaved }) {
       <label>Biyografi<textarea maxLength={160} rows={3} value={profile.bio} onChange={event => set('bio', event.target.value)} /></label>
     </fieldset><div className="modal-actions"><button type="button" className="btn-cancel" disabled={busy} onClick={onClose}>Vazgeç</button><button type="submit" className="btn-save" disabled={busy}>{busy ? 'Kaydediliyor…' : 'Kaydet'}</button></div></form>}
     {error && <div className="auth-error" role="alert"><p>{error.message}</p>{error.status === 401 ? <a href="/auth-test">Giriş yap</a> : <button type="button" className="btn-cancel" disabled={busy} onClick={() => setAttempt(value => value + 1)}>{profile ? 'Değişikliklerden vazgeç ve güncel profili yükle' : 'Tekrar dene'}</button>}</div>}
+    {profile && <PasswordForm disabled={busy} onBusyChange={value => { locked.current = value; setBusy(value) }} />}
   </dialog>
 }

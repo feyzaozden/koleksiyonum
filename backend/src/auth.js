@@ -46,7 +46,7 @@ export function createAuth(pool, { origin, allowLocalRegistration = false, requi
     const reply = (status, value) => { res.statusCode = status; res.end(JSON.stringify(value)) }
     const token = tokenOf(req)
     try {
-      if (!['/auth/register','/auth/login','/auth/session','/auth/logout','/auth/local-inbox','/auth/request-verification','/auth/forgot-password','/auth/verify-email','/auth/reset-password'].includes(path)) return reply(404,{ error:'not_found' })
+      if (!['/auth/register','/auth/login','/auth/session','/auth/logout','/auth/local-inbox','/auth/request-verification','/auth/forgot-password','/auth/verify-email','/auth/reset-password','/auth/change-password'].includes(path)) return reply(404,{ error:'not_found' })
       const method = ['/auth/session','/auth/local-inbox'].includes(path) ? 'GET' : 'POST'
       if (req.method !== method) { res.setHeader('Allow', method); return reply(405,{ error:'method_not_allowed' }) }
       // No CORS. Same-origin JSON requests only, including login (login CSRF).
@@ -70,6 +70,23 @@ export function createAuth(pool, { origin, allowLocalRegistration = false, requi
       // Proxy headers are intentionally ignored until the trusted reverse proxy is configured.
       await limit('ip:' + req.socket.remoteAddress,50)
       const body = await bodyOf(req)
+      if (path === '/auth/change-password') {
+        if (!token) throw fail(401,'Oturumun sona erdi. Tekrar giriş yap.')
+        const { rows } = await pool.query('SELECT * FROM accounts.password_candidate_for_session($1)',[digest(token)])
+        const candidate = rows[0]
+        if (!candidate) throw fail(401,'Oturumun sona erdi. Tekrar giriş yap.')
+        await limit('change-password:' + candidate.id,10)
+        if (Object.keys(body).some(key => !['current_password','password','password_confirmation'].includes(key))) throw fail(400,'Geçersiz şifre değiştirme isteği.')
+        if (typeof body.current_password !== 'string' || !body.current_password.length || body.current_password.length > 128) throw fail(400,'Mevcut şifreni gir.')
+        if (typeof body.password !== 'string' || body.password.length < 8 || body.password.length > 128 || !/[A-Z]/.test(body.password) || !/[a-z]/.test(body.password) || !/[0-9]/.test(body.password)) throw fail(400,'Şifre 8–128 karakter, büyük harf, küçük harf ve rakam içermeli.')
+        if (body.password !== body.password_confirmation) throw fail(400,'Şifreler aynı olmalı.')
+        if (!await verifyPassword(body.current_password,candidate.password_hash)) throw fail(400,'Mevcut şifre yanlış.')
+        const newHash = await hashPassword(body.password), next = randomBytes(32).toString('hex')
+        const result = await pool.query('SELECT accounts.change_password($1,$2,$3,$4) AS changed',[digest(token),candidate.password_hash,newHash,digest(next)])
+        if (!result.rows[0]?.changed) throw fail(409,'Hesap veya oturum değişmiş. Tekrar giriş yapıp dene.')
+        res.setHeader('Set-Cookie',cookie(next))
+        return reply(200,{ ok:true })
+      }
       if (['/auth/verify-email','/auth/reset-password'].includes(path)) {
         if (!mail) throw fail(503,'Bu işlem henüz kullanıma açık değil.')
         if (typeof body.token !== 'string' || !/^[a-f0-9]{64}$/.test(body.token)) throw fail(400,'Bağlantı geçersiz veya süresi dolmuş.')
