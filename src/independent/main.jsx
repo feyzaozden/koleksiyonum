@@ -15,6 +15,7 @@ import ItemMenu from './ItemMenu'
 import DeleteConfirm from '../components/DeleteConfirm'
 import './styles.css'
 import tmdbLogo from '../../public/tmdb.svg?inline'
+import ProfileDialog from './ProfileDialog'
 
 function CollectionApp() {
   const [user, setUser] = useState(null)
@@ -30,6 +31,7 @@ function CollectionApp() {
   const [deleting, setDeleting] = useState(null)
   const [notice, setNotice] = useState('')
   const [finishing, setFinishing] = useState(null)
+  const [profileOpen, setProfileOpen] = useState(false)
   function reload() { setEditor(null); setDeleting(null); setAttempt(value => value + 1) }
   async function save(payload, existing, selected) {
     const saved = selected ? await saveCatalogItem(payload, selected) : await saveItem(existing ? payload : { ...payload, emoji: TABS[payload.category].emoji }, existing)
@@ -52,9 +54,10 @@ function CollectionApp() {
     async function load() {
       try {
         const session = await request('/auth/session', controller.signal)
+        const { profile } = await request('/api/collection/profile', controller.signal)
         const collection = await loadCollection(controller.signal)
         if (controller.signal.aborted) return
-        setUser(session.user); setItems(collection)
+        setUser({ ...session.user, ...profile }); setItems(collection)
       } catch (err) {
         if (!controller.signal.aborted) { setError(err); if (err.status === 401) setUser(null) }
       } finally { if (!controller.signal.aborted) setLoading(false) }
@@ -68,7 +71,7 @@ function CollectionApp() {
   const tab = TABS[category]
   const visible = filterAndSortItems(items, { category, search, statusFilter, sort })
   return <div className="app-shell independent-collection"><main className="main app-content">
-    <section className="profile-hero"><div><h1>{user?.display_name || 'Koleksiyonum'}</h1>{user?.username && <p>@{user.username}</p>}</div></section>
+    <section className="profile-hero"><div><h1>{user?.display_name || 'Koleksiyonum'}</h1>{user?.username && <p>@{user.username}</p>}{user?.bio && <p style={{ whiteSpace: 'pre-wrap' }}>{user.bio}</p>}{user && !loading && !error && <button type="button" className="btn-cancel" onClick={() => setProfileOpen(true)}>Profilim</button>}</div></section>
     <div className="tabs">{Object.entries(TABS).map(([key, value]) => <button type="button" key={key} className={'tab-btn' + (category === key ? ' active' : '')} aria-pressed={category === key} onClick={() => { setCategory(key); setStatusFilter('tumu') }}>{value.emoji} {value.label}</button>)}</div>
     {loading ? <p role="status">Koleksiyon yükleniyor…</p> : error ? <div role="alert"><p>{error.message}</p>{error.status === 401 ? <a href="/auth-test">Giriş yap</a> : <button type="button" onClick={() => setAttempt(value => value + 1)}>Tekrar dene</button>}</div> : <>
       <div className="collection-toolbar"><button type="button" className="btn-add" onClick={() => setEditor({ category, item: null })}>+ Yeni ekle</button><button type="button" className="btn-cancel" onClick={reload}>Listeyi yenile</button></div>
@@ -90,6 +93,7 @@ function CollectionApp() {
     </>}
     {editor && <ItemFormDialog category={editor.category} item={editor.item} onClose={() => setEditor(null)} onSave={save} onReload={reload} />}
     {deleting && <DeleteConfirm item={deleting} onCancel={() => setDeleting(null)} onConfirm={remove} />}
+    {profileOpen && <ProfileDialog onClose={() => setProfileOpen(false)} onSaved={profile => { setUser(previous => ({ ...previous, ...profile })); setNotice('Profil güncellendi.') }} />}
     {finishing && <ProgressDialog item={finishing} finish onClose={() => setFinishing(null)} onSave={(id, patch) => progress(id, patch, finishing)} />}
     <footer className="app-footer"><details className="app-footer-credits"><summary>Kaynaklar</summary><a href="https://www.themoviedb.org" target="_blank" rel="noreferrer"><img src={tmdbLogo} alt="TMDB" width="80" height="32" /></a><p>Film ve dizi bilgileri TMDB’den sağlanır.</p><p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p></details></footer>
   </main></div>

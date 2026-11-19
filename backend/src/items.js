@@ -28,17 +28,28 @@ export function createItems(pool,{origin, catalog = createCatalog()}) {
     const reply=(status,data)=>{res.statusCode=status;res.end(JSON.stringify(data))}
     try {
       const isCatalog = path === '/api/collection/catalog'
-      const match=isCatalog ? [path, null] : /^\/api\/collection(?:\/([1-9]\d{0,18}))?$/.exec(path)
+      const isProfile = path === '/api/collection/profile'
+      const match=isCatalog || isProfile ? [path, null] : /^\/api\/collection(?:\/([1-9]\d{0,18}))?$/.exec(path)
       if(!match)return reply(404,{error:'İçerik bulunamadı.'})
       const id=match[1]||null
       if(id && BigInt(id)>9223372036854775807n)throw fail(400,'Geçersiz içerik numarası.')
-      const methods=id?['PATCH','DELETE']:['GET','POST']
+      const methods=isProfile?['GET','PATCH']:id?['PATCH','DELETE']:['GET','POST']
       if(!methods.includes(req.method)){res.setHeader('Allow',methods.join(', '));throw fail(405,'Bu yöntem desteklenmiyor.')}
       if(req.method!=='GET'&&(req.headers.origin!==origin||req.headers['sec-fetch-site']==='cross-site'))throw fail(403,'İstek kaynağına izin verilmiyor.')
       const cookies=(req.headers.cookie||'').split(';').map(s=>s.trim()).filter(s=>s.startsWith(name+'='))
       const token=cookies.length===1?cookies[0].slice(name.length+1):''
       if(!/^[a-f0-9]{64}$/.test(token))throw fail(401,'Lütfen giriş yap.')
       const hash=createHash('sha256').update(token).digest('hex')
+      if (isProfile) {
+        if (req.method === 'GET') {
+          const result = await pool.query('SELECT collection.get_own_profile($1) AS profile', [hash])
+          return reply(200, { profile: result.rows[0].profile })
+        }
+        const { revision, ...data } = await readBody(req)
+        if (!Number.isInteger(revision) || revision < 1 || revision > 2147483647) throw fail(400, 'Güncel profil sürümü gerekli.')
+        const result = await pool.query('SELECT collection.update_own_profile($1,$2,$3) AS profile', [hash, revision, JSON.stringify(data)])
+        return reply(200, { profile: result.rows[0].profile })
+      }
       if (isCatalog) {
         const actor = (await pool.query('SELECT collection.require_actor($1) AS id', [hash])).rows[0].id
         const now = Date.now(), limit = limits.get(actor)
