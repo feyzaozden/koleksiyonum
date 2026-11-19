@@ -8,3 +8,5 @@
 .independent-collection .add-item-dialog textarea { width: 100%; min-height: 5rem; resize: vertical; }
 .independent-collection .add-item-dialog .form-row { flex-wrap: wrap; }
 @media (max-width: 600px) { .independent-collection .add-item-dialog .form-row > label { flex-basis: 100%; } }
+.independent-avatar { width: 96px; height: 96px; flex: 0 0 96px; border-radius: 50%; object-fit: cover; display: inline-flex; align-items: center; justify-content: center; background: var(--surface2); font-size: 2rem; }
+.independent-avatar-controls { display: flex; flex-direction: column; align-items: flex-start; gap: .6rem; margin-bottom: 1rem; }

@@ -2,16 +2,19 @@ import { createServer } from 'node:http'
 import { createAuth } from './auth.js'
 import { readFile } from 'node:fs/promises'
 import { createItems } from './items.js'
+import { createProfilePhoto } from './profile-photo.js'
 
 export function createApp(pool, options = {}) {
   const auth = options.origin ? createAuth(pool, options) : null
   const items = options.origin ? createItems(pool,options) : null
+  const photo = options.origin ? createProfilePhoto(pool, options) : null
   return createServer(async (req, res) => {
     res.setHeader('Content-Type', 'application/json; charset=utf-8')
     res.setHeader('Cache-Control', 'no-store')
     res.setHeader('X-Content-Type-Options', 'nosniff')
     res.setHeader('Referrer-Policy', 'no-referrer')
     const path = new URL(req.url, 'http://localhost').pathname
+    if (path === '/api/collection/profile/photo' && photo) return photo(req, res)
     if (path === '/collection-app' || path.startsWith('/collection-app/')) {
       if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405); res.end(); return }
       const asset = path.slice('/collection-app/'.length)

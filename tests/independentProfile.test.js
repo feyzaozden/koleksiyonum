@@ -25,7 +25,7 @@ test('profile is session-owned, normalized, unique, validated and revision prote
     const call = (data, user = 0, origin = 'https://test.example') => fetch(url, { method: data ? 'PATCH' : 'GET', headers: { Cookie: `__Host-koleksiyonum_session=${tokens[user]}`, Origin: origin, 'Content-Type': 'application/json' }, body: data ? JSON.stringify(data) : undefined })
     assert.equal((await fetch(url)).status, 401)
     const profile = (await (await call()).json()).profile
-    assert.deepEqual(Object.keys(profile).sort(), ['bio','display_name','id','revision','username'])
+    assert.deepEqual(Object.keys(profile).sort(), ['bio','display_name','has_photo','id','revision','username'])
     assert.equal(profile.id, ids[0])
     assert.equal((await call({ revision: 1, bio: 'bad' }, 0, 'https://evil.example')).status, 403)
     for (const patch of [{ id: ids[1] }, { is_public: true }, { username: 'bad name' }, { username: '1bad' }, { username: 'ab' }, { username: null }, { display_name: ' ' }, { display_name: 'x'.repeat(81) }, { bio: 'x'.repeat(161) }]) {

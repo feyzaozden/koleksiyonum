@@ -20,6 +20,7 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - run: npm ci --prefix backend
       - run: npm run lint
       - run: npx vite build --config vite.independent.config.js
       - run: node --test --test-concurrency=2 tests/*.test.js
