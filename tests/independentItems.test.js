@@ -9,7 +9,7 @@ test('manual collection API protects ownership, dates, duplicates, revisions and
   const db=new PGlite();let app
   try{
     await db.exec('CREATE ROLE collection_app')
-    for(const file of ['001_core.sql','002_auth.sql','003_auth_links.sql','004_verified_password.sql','005_collection_crud.sql'])await db.exec(await readFile(new URL('../backend/migrations/'+file,import.meta.url),'utf8'))
+    for(const file of ['001_core.sql','002_auth.sql','003_auth_links.sql','004_verified_password.sql','005_collection_crud.sql','006_progress_catalog.sql'])await db.exec(await readFile(new URL('../backend/migrations/'+file,import.meta.url),'utf8'))
     const tokens=['a'.repeat(64),'b'.repeat(64)],hashes=tokens.map(t=>createHash('sha256').update(t).digest('hex')),ids=[]
     for(let i=0;i<2;i++){
       const id=(await db.query('INSERT INTO accounts.users(email,email_verified_at) VALUES($1,now()) RETURNING id',[`item${i}@example.test`])).rows[0].id;ids.push(id)

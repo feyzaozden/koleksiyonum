@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto'
+import { createCatalog } from './catalog.js'
 
 const fail=(status,message)=>Object.assign(new Error(message),{status})
-const fields=new Set(['category','title','creator','year','status','note','start_date','end_date','rating','emoji'])
+const fields=new Set(['category','title','creator','year','status','note','start_date','end_date','rating','emoji','progress'])
 async function readBody(req) {
   if(req.headers['content-type']?.split(';')[0].trim()!=='application/json') throw fail(415,'JSON gerekli.')
   const chunks=[];let size=0
@@ -12,7 +13,7 @@ async function readBody(req) {
 function validate(data) {
   for(const [key,value] of Object.entries(data)) {
     if(!fields.has(key))throw fail(400,'Bu alan değiştirilemez: '+key)
-    if(value!=null && key!=='rating' && typeof value!=='string')throw fail(400,'Geçersiz alan: '+key)
+    if(value!=null && !['rating','progress'].includes(key) && typeof value!=='string')throw fail(400,'Geçersiz alan: '+key)
   }
   if(data.rating!=null && (!Number.isInteger(data.rating)||data.rating<1||data.rating>10))throw fail(400,'Puan 1–10 arasında tam sayı olmalı.')
   for(const key of ['start_date','end_date'])if(data[key]!=null) {
@@ -20,12 +21,14 @@ function validate(data) {
     if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date<'0001-01-01'||Number.isNaN(Date.parse(date))||new Date(date).toISOString().slice(0,10)!==date)throw fail(400,'Geçerli bir tarih gir.')
   }
 }
-export function createItems(pool,{origin}) {
+export function createItems(pool,{origin, catalog = createCatalog()}) {
   const name=new URL(origin).protocol==='https:'?'__Host-koleksiyonum_session':'koleksiyonum_dev_session'
+  const limits = new Map()
   return async(req,res,path)=>{
     const reply=(status,data)=>{res.statusCode=status;res.end(JSON.stringify(data))}
     try {
-      const match=/^\/api\/collection(?:\/([1-9]\d{0,18}))?$/.exec(path)
+      const isCatalog = path === '/api/collection/catalog'
+      const match=isCatalog ? [path, null] : /^\/api\/collection(?:\/([1-9]\d{0,18}))?$/.exec(path)
       if(!match)return reply(404,{error:'İçerik bulunamadı.'})
       const id=match[1]||null
       if(id && BigInt(id)>9223372036854775807n)throw fail(400,'Geçersiz içerik numarası.')
@@ -36,6 +39,24 @@ export function createItems(pool,{origin}) {
       const token=cookies.length===1?cookies[0].slice(name.length+1):''
       if(!/^[a-f0-9]{64}$/.test(token))throw fail(401,'Lütfen giriş yap.')
       const hash=createHash('sha256').update(token).digest('hex')
+      if (isCatalog) {
+        const actor = (await pool.query('SELECT collection.require_actor($1) AS id', [hash])).rows[0].id
+        const now = Date.now(), limit = limits.get(actor)
+        if (limit?.until > now && limit.count >= 60) throw fail(429, 'Arama sınırına ulaştın. Bir dakika sonra tekrar dene.')
+        if (limits.size >= 5000 && !limits.has(actor)) limits.delete(limits.keys().next().value)
+        limits.set(actor, limit?.until > now ? { ...limit, count: limit.count + 1 } : { until: now + 60000, count: 1 })
+        if (req.method === 'GET') {
+          const params = new URL(req.url, origin).searchParams
+          return reply(200, await catalog(params.get('category'), { q: params.get('q'), id: params.get('id') }))
+        }
+        const { category, source_id, ...personal } = await readBody(req)
+        if (Object.keys(personal).some(key => !['status','note','start_date','end_date','rating','progress'].includes(key))) throw fail(400, 'Katalog alanlarını değiştiremezsin.')
+        validate(personal)
+        if (source_id == null) throw fail(400, 'Bir içerik seç.')
+        const metadata = await catalog(category, { id: source_id })
+        const result = await pool.query('SELECT collection.create_catalog_item($1,$2,$3) AS item', [hash, JSON.stringify(personal), JSON.stringify(metadata)])
+        return reply(201, { item: result.rows[0].item })
+      }
       if(req.method==='GET') {
         const params=new URL(req.url,origin).searchParams
         if([...params.keys()].some(key=>!['category','limit','offset'].includes(key)))throw fail(400,'Geçersiz listeleme parametresi.')

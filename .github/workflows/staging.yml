@@ -34,6 +34,7 @@ jobs:
           sh -n deploy/staging/start.sh
           sh -n deploy/staging/install-ci.sh
           bash -n deploy/staging/configure-mail.sh
+          bash -n deploy/staging/configure-catalog.sh
       - name: Test deploy failure handling in isolated container
         run: docker run --rm --network none --mount "type=bind,source=$GITHUB_WORKSPACE,target=/source,readonly" node:24-bookworm-slim bash /source/tests/staging-deploy.sh
   deploy:

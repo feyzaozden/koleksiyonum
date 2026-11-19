@@ -20,7 +20,7 @@ export function createApp(pool, options = {}) {
       try {
         const data = await readFile(new URL('../pages/collection-ui/' + (entry ? 'collection-app.html' : asset), import.meta.url))
         res.setHeader('Content-Type', entry ? 'text/html; charset=utf-8' : asset.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/javascript; charset=utf-8')
-        res.setHeader('Content-Security-Policy', "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
+        res.setHeader('Content-Security-Policy', "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data: https://image.tmdb.org; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
         res.end(req.method === 'HEAD' ? undefined : data)
       } catch { res.writeHead(404); res.end() }
       return

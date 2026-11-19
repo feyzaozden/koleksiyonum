@@ -52,6 +52,7 @@ services:
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       MAIL_FROM: ${MAIL_FROM:-}
       MAIL_TEST_RECIPIENTS: ${MAIL_TEST_RECIPIENTS:-}
+      TMDB_READ_ACCESS_TOKEN: ${TMDB_READ_ACCESS_TOKEN:-}
     networks: [database, web]
     depends_on:
       db:

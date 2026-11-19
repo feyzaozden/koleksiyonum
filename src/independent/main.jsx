@@ -8,11 +8,13 @@ import StarsDisplay from '../components/StarsDisplay'
 import { TABS } from '../constants/tabs'
 import { filterAndSortItems } from '../utils/filterSort'
 import { fmtDate } from '../utils/format'
-import { loadCollection, request, saveItem, removeItem } from './client'
+import { loadCollection, request, saveItem, saveCatalogItem, removeItem } from './client'
+import ItemProgress, { ProgressDialog } from '../components/ItemProgress'
 import ItemFormDialog from './ItemFormDialog'
 import ItemMenu from './ItemMenu'
 import DeleteConfirm from '../components/DeleteConfirm'
 import './styles.css'
+import tmdbLogo from '../../public/tmdb.svg?inline'
 
 function CollectionApp() {
   const [user, setUser] = useState(null)
@@ -27,12 +29,17 @@ function CollectionApp() {
   const [editor, setEditor] = useState(null)
   const [deleting, setDeleting] = useState(null)
   const [notice, setNotice] = useState('')
+  const [finishing, setFinishing] = useState(null)
   function reload() { setEditor(null); setDeleting(null); setAttempt(value => value + 1) }
-  async function save(payload, existing) {
-    const saved = await saveItem(existing ? payload : { ...payload, emoji: TABS[payload.category].emoji }, existing)
+  async function save(payload, existing, selected) {
+    const saved = selected ? await saveCatalogItem(payload, selected) : await saveItem(existing ? payload : { ...payload, emoji: TABS[payload.category].emoji }, existing)
     setItems(previous => existing ? previous.map(item => item.id === saved.id ? saved : item) : [saved, ...previous])
     if (!existing) { setSearch(''); setStatusFilter('tumu'); setSort('newest') }
     setNotice(existing ? 'Değişiklikler kaydedildi.' : 'İçerik koleksiyonuna eklendi.')
+  }
+  async function progress(id, patch, snapshot) {
+    const saved = await saveItem(patch, snapshot || items.find(item => item.id === id))
+    setItems(previous => previous.map(item => item.id === saved.id ? saved : item))
   }
   async function remove() {
     await removeItem(deleting)
@@ -69,19 +76,22 @@ function CollectionApp() {
       {category !== 'muzik' && <StatsBar items={items.filter(item => item.category === category)} collectionItems={items.filter(item => item.category !== 'muzik')} labels={tab.statusLabels} />}
       <FilterBar category={category} search={search} onSearchChange={setSearch} statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} sort={sort} onSortChange={setSort} />
       <div className="items-grid">{visible.map(item => <article className="item-card" key={item.id}>
-        <ItemMenu item={item} onEdit={() => setEditor({ category: item.category, item })} onDelete={() => setDeleting(item)} />
-        <div className="item-emoji" aria-hidden="true">{item.emoji || tab.emoji}</div>
+        <ItemMenu item={item} onFinish={() => setFinishing(item)} onEdit={() => setEditor({ category: item.category, item })} onDelete={() => setDeleting(item)} />
+        {/^\/[a-zA-Z0-9_-]+\.(jpg|png|webp)$/.test(item.poster_path || '') ? <div className="item-cover"><img src={`https://image.tmdb.org/t/p/w185${item.poster_path}`} alt={`${item.title} afişi`} loading="lazy" /></div> : <div className="item-emoji" aria-hidden="true">{item.emoji || tab.emoji}</div>}
         <div className="item-body"><h3 className="item-title">{item.title}</h3><p className="item-meta">{[item.creator, item.year].filter(Boolean).join(' · ')}</p>
           {category !== 'muzik' && <span className={'status-badge ' + item.status}>{tab.statusLabels[item.status]}</span>}
           {item.rating != null && <StarsDisplay rating={item.rating} />}
           {(item.start_date || item.end_date) && <p className="item-meta">{item.start_date && `Başlangıç: ${fmtDate(item.start_date)}`} {item.end_date && `Bitiş: ${fmtDate(item.end_date)}`}</p>}
           {item.note && <ItemNote note={item.note} />}
+          {category !== 'muzik' && <ItemProgress item={item} isOwner onSave={(id, patch) => progress(id, patch, item)} />}
         </div>
       </article>)}</div>
       {!visible.length && <p className="empty">{search || statusFilter !== 'tumu' ? 'Bu filtrelere uygun içerik bulunamadı.' : 'Bu kategoride henüz içerik yok.'}</p>}
     </>}
     {editor && <ItemFormDialog category={editor.category} item={editor.item} onClose={() => setEditor(null)} onSave={save} onReload={reload} />}
     {deleting && <DeleteConfirm item={deleting} onCancel={() => setDeleting(null)} onConfirm={remove} />}
+    {finishing && <ProgressDialog item={finishing} finish onClose={() => setFinishing(null)} onSave={(id, patch) => progress(id, patch, finishing)} />}
+    <footer className="app-footer"><details className="app-footer-credits"><summary>Kaynaklar</summary><a href="https://www.themoviedb.org" target="_blank" rel="noreferrer"><img src={tmdbLogo} alt="TMDB" width="80" height="32" /></a><p>Film ve dizi bilgileri TMDB’den sağlanır.</p><p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p></details></footer>
   </main></div>
 }
 

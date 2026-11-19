@@ -23,6 +23,15 @@ export async function saveItem(data, item = null) {
   return result.item
 }
 
+export async function saveCatalogItem(data, selected) {
+  const { status, note, start_date, end_date, rating, progress } = data
+  const result = await request('/api/collection/catalog', undefined, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ category: selected.category, source_id: selected.id, status, note, start_date, end_date, rating, progress }),
+  })
+  return result.item
+}
+
 export async function removeItem(item) {
   return request(`/api/collection/${encodeURIComponent(item.id)}`, undefined, {
     method: 'DELETE', headers: { 'Content-Type': 'application/json' },
